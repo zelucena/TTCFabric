@@ -44,7 +44,7 @@ type AttributeRequest interface {
 // New constructs an attribute manager
 func New() *Mgr { return &Mgr{} }
 
-// Mgr is the attribute manager and is the main object for this package
+// Mgr is the attribute manager and is the cmd object for this package
 type Mgr struct{}
 
 // ProcessAttributeRequestsForCert add attributes to an X509 certificate, given
