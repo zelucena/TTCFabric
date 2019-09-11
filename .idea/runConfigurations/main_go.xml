@@ -1,11 +1,13 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="main.go" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="votacao" />
-    <working_directory value="$PROJECT_DIR$" />
+    <working_directory value="$PROJECT_DIR$/../votacao/cmd" />
     <kind value="FILE" />
-    <filePath value="$PROJECT_DIR$/main/votacao.go" />
+    <filePath value="$PROJECT_DIR$/../votacao/votacao.go" />
     <package value="github.com/hyperledger/fabric-chaincode-go" />
     <directory value="$PROJECT_DIR$/" />
+    <output_directory value="$PROJECT_DIR$/../votacao/cmd" />
+    <option name="run" value="false" />
     <method v="2" />
   </configuration>
 </component>
