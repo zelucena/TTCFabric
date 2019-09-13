@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"bytes"
 	"encoding/binary"
+	"fmt"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/peer"
 	"time"
 )
