@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/protos/peer"
 	"time"
 )
 
@@ -33,13 +33,13 @@ type Voto struct {
 	candidato *Candidato
 }
 
-type SmartContract struct {}
+type VotacaoContract struct {}
 
-func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
+func (s *VotacaoContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
 	return shim.Success(nil)
 }
 
-func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
+func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 
 	// Retrieve the requested Smart Contract function and arguments
 	function, args := APIstub.GetFunctionAndParameters()
@@ -60,7 +60,7 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respons
 }
 
 //estilo 1, recebendo objeto
-func (s *SmartContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var buffer bytes.Buffer
 
 	if len(args) != 5 {
@@ -118,13 +118,13 @@ func (s *SmartContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
-func (s *SmartContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 
 	return shim.Success(nil)
 }
 
 //estilo 2, recebendo lista
-func (s *SmartContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	votacaoAsBytes, _ := APIstub.GetState(args[0])
 	if votacaoAsBytes == nil {
 		return shim.Error("Não foi possível localizar votação")
@@ -132,17 +132,17 @@ func (s *SmartContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface, a
 	return shim.Success(votacaoAsBytes)
 }
 
-func (s *SmartContract) visualizarCandidatos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (s *VotacaoContract) visualizarCandidatos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 
 	return shim.Success(nil)
 }
 
-func (s *SmartContract) votar(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	return shim.Success(nil)
 }
 
 func main() {
-	err := shim.Start(new(SmartContract))
+	err := shim.Start(new(VotacaoContract))
 	if err != nil {
 		fmt.Printf("Error starting chaincode: %s", err)
 	}
