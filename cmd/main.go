@@ -101,8 +101,8 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if getStateError != nil {
 		return shim.Error(fmt.Sprintf("%s", getStateError))
 	}
-
-	var bufferError = binary.Write(&buffer, binary.BigEndian, votacao)
+return shim.Error(fmt.Sprintf("%s", "teste"))
+	var bufferError = binary.Write(&buffer, binary.BigEndian, &votacao)
 	if bufferError != nil {
 		return shim.Error(fmt.Sprintf("%s", bufferError))
 	}
