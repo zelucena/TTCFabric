@@ -63,8 +63,8 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var buffer bytes.Buffer
 
-	if len(args) != 5 {
-		return shim.Error("Esperados 5 parâmetros: ID, início candidatura, término candidatura, início votação, término votação")
+	if len(args) != 6 {
+		return shim.Error("Esperados 6 parâmetros: Método, ID, início candidatura, término candidatura, início votação, término votação")
 	}
 
 	var ID 						  = args[0]
