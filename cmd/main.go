@@ -68,10 +68,10 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	var ID 						  = args[0]
-	var inicioCandidatura, 	erro1 = time.Parse("2016-01-02 15:04:05", args[1])
-	var terminoCandidatura, erro2 = time.Parse("2016-01-02 15:04:05", args[2])
-	var inicioVotacao, 		erro3 = time.Parse("2016-01-02 15:04:05", args[3])
-	var terminoVotacao, 	erro4 = time.Parse("2016-01-02 15:04:05", args[4])
+	var inicioCandidatura, 	erro1 = time.Parse("2006-01-02 15:04:05", args[1])
+	var terminoCandidatura, erro2 = time.Parse("2006-01-02 15:04:05", args[2])
+	var inicioVotacao, 		erro3 = time.Parse("2006-01-02 15:04:05", args[3])
+	var terminoVotacao, 	erro4 = time.Parse("2006-01-02 15:04:05", args[4])
 
 	if erro1 != nil {
 		return shim.Error(erro1.Error())
@@ -101,7 +101,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if getStateError != nil {
 		return shim.Error(fmt.Sprintf("%s", getStateError))
 	}
-return shim.Error(fmt.Sprintf("%s", "teste"))
+
 	var bufferError = binary.Write(&buffer, binary.BigEndian, &votacao)
 	if bufferError != nil {
 		return shim.Error(fmt.Sprintf("%s", bufferError))
