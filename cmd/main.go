@@ -56,7 +56,7 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return s.votar(APIstub, args)
 	}
 
-	return shim.Error("Função indisponível.")
+	return shim.Error("Funcao indisponivel.")
 }
 
 //estilo 1, recebendo objeto
@@ -68,10 +68,10 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	var ID 						  = args[0]
-	var inicioCandidatura, 	erro1 = time.Parse(time.RFC3339, args[1])
-	var terminoCandidatura, erro2 = time.Parse(time.RFC3339, args[2])
-	var inicioVotacao, 		erro3 = time.Parse(time.RFC3339, args[3])
-	var terminoVotacao, 	erro4 = time.Parse(time.RFC3339, args[4])
+	var inicioCandidatura, 	erro1 = time.Parse("2016-01-02 15:04:05", args[1])
+	var terminoCandidatura, erro2 = time.Parse("2016-01-02 15:04:05", args[2])
+	var inicioVotacao, 		erro3 = time.Parse("2016-01-02 15:04:05", args[3])
+	var terminoVotacao, 	erro4 = time.Parse("2016-01-02 15:04:05", args[4])
 
 	if erro1 != nil {
 		return shim.Error(erro1.Error())
@@ -110,7 +110,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	var putStateError = APIstub.PutState(votacao.ID, buffer.Bytes())
 
 	if putStateError != nil {
-		mensagemErro := fmt.Sprintf("Erro: não é possível inserir votação com id <%d>, devido a %s", votacao.ID, putStateError)
+		mensagemErro := fmt.Sprintf("Erro: nao e possivel inserir votacao com id <%d>, devido a %s", votacao.ID, putStateError)
 		fmt.Println(mensagemErro)
 		return shim.Error(mensagemErro)
 	}
@@ -127,7 +127,7 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	votacaoAsBytes, _ := APIstub.GetState(args[0])
 	if votacaoAsBytes == nil {
-		return shim.Error("Não foi possível localizar votação")
+		return shim.Error("Nao foi possivel localizar votacao")
 	}
 	return shim.Success(votacaoAsBytes)
 }
