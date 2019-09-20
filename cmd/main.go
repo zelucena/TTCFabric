@@ -78,15 +78,15 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	if erro2 != nil {
-		return shim.Error(erro1.Error())
+		return shim.Error(erro2.Error())
 	}
 
 	if erro3 != nil {
-		return shim.Error(erro1.Error())
+		return shim.Error(erro3.Error())
 	}
 
 	if erro4 != nil {
-		return shim.Error(erro1.Error())
+		return shim.Error(erro4.Error())
 	}
 
 	var votacao = Votacao{
