@@ -52,7 +52,7 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return s.cadastrarCandidato(APIstub, args)
 	} else if function == "visualizarCandidatos" {
 		return s.visualizarCandidatos(APIstub, args)
-	} else if function == "votar" {main.go
+	} else if function == "votar" {
 		return s.votar(APIstub, args)
 	}
 
