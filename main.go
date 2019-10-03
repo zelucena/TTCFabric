@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
+	"encoding/json"
+	_ "encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/peer"
@@ -61,10 +61,8 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 
 //estilo 1, recebendo objeto
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var buffer bytes.Buffer
-
-	if len(args) != 6 {
-		return shim.Error("Esperados 6 parâmetros: Método, ID, início candidatura, término candidatura, início votação, término votação")
+	if len(args) != 5 {
+		return shim.Error("Esperados 6 parametros: Metodo, ID, inicio candidatura, termino candidatura, inicio votacao, termino votacao")
 	}
 
 	var ID 						  = args[0]
@@ -102,12 +100,13 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(fmt.Sprintf("%s", getStateError))
 	}
 
-	var bufferError = binary.Write(&buffer, binary.BigEndian, &votacao)
-	if bufferError != nil {
-		return shim.Error(fmt.Sprintf("%s", bufferError))
+	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
+
+	if erroJSON != nil {
+		return shim.Error(fmt.Sprintf("%s", erroJSON))
 	}
 
-	var putStateError = APIstub.PutState(votacao.ID, buffer.Bytes())
+	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
 
 	if putStateError != nil {
 		mensagemErro := fmt.Sprintf("Erro: nao e possivel inserir votacao com id <%d>, devido a %s", votacao.ID, putStateError)
