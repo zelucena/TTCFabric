@@ -2,49 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bf0e6bf0-7db5-4760-b898-fabaf877cba4" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/main_go.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/votacao.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE_OF_CONDUCT.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CONTRIBUTING.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/azure-pipelines.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/main.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/main_go.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/attrmgr/attrmgr.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/attrmgr/attrmgr_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/cid/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/cid/cid.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/cid/cid_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/cid/interfaces.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/statebased/interfaces.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/statebased/statebasedimpl.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/statebased/statebasedimpl_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/handler.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/handler_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/interfaces.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/internal/client.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/internal/client_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/internal/config.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/internal/config_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/internal/mock/peer_chaincode_stream.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/response.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/shim.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/shim_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/stub.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shim/stub_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shimtest/mock/chaincode.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shimtest/mockstub.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shimtest/mockstub_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/useful_docs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
