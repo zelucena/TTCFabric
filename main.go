@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/peer"
+	"net/url"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -17,10 +20,10 @@ type Candidato struct {
 
 type Votacao struct {
 	ID string
-	inicioCandidatura time.Time
-	terminoCandidatura time.Time
-	inicioVotacao time.Time
-	terminoVotacao time.Time
+	inicioCandidatura JSONTime
+	terminoCandidatura JSONTime
+	inicioVotacao JSONTime
+	terminoVotacao JSONTime
 }
 
 type Votante struct {
@@ -28,12 +31,22 @@ type Votante struct {
 }
 
 type Voto struct {
-	votante *Votante
-	horario *time.Time
-	candidato *Candidato
+	votante Votante
+	horario JSONTime
+	candidato Candidato
 }
 
+//Esta é a classe da chaincode
 type VotacaoContract struct {}
+
+//tipo custom de timeestamp que aceita ser transformado em JSON
+type JSONTime time.Time
+
+func (t JSONTime)MarshalJSON() ([]byte, error) {
+	//do your serializing here
+	stamp := fmt.Sprintf("\"%s\"", time.Time(t).Format("2006-01-02 15:04:05"))
+	return []byte(stamp), nil
+}
 
 func (s *VotacaoContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
 	return shim.Success(nil)
