@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/peer"
-	"net/url"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -20,10 +17,11 @@ type Candidato struct {
 
 type Votacao struct {
 	ID string
-	inicioCandidatura JSONTime
-	terminoCandidatura JSONTime
-	inicioVotacao JSONTime
-	terminoVotacao JSONTime
+	inicioCandidatura string
+	terminoCandidatura string
+	inicioVotacao string
+	terminoVotacao string
+	cadastro string
 }
 
 type Votante struct {
@@ -32,21 +30,12 @@ type Votante struct {
 
 type Voto struct {
 	votante Votante
-	horario JSONTime
+	horario string
 	candidato Candidato
 }
 
 //Esta é a classe da chaincode
-type VotacaoContract struct {}
-
-//tipo custom de timeestamp que aceita ser transformado em JSON
-type JSONTime time.Time
-
-func (t JSONTime)MarshalJSON() ([]byte, error) {
-	//do your serializing here
-	stamp := fmt.Sprintf("\"%s\"", time.Time(t).Format("2006-01-02 15:04:05"))
-	return []byte(stamp), nil
-}
+type VotacaoContract struct { }
 
 func (s *VotacaoContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
 	return shim.Success(nil)
@@ -74,15 +63,16 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 
 //estilo 1, recebendo objeto
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	formatoData := "2006-01-02 15:04:05"
 	if len(args) != 5 {
 		return shim.Error("Esperados 6 parametros: Metodo, ID, inicio candidatura, termino candidatura, inicio votacao, termino votacao")
 	}
 
 	var ID 						  = args[0]
-	var inicioCandidatura, 	erro1 = time.Parse("2006-01-02 15:04:05", args[1])
-	var terminoCandidatura, erro2 = time.Parse("2006-01-02 15:04:05", args[2])
-	var inicioVotacao, 		erro3 = time.Parse("2006-01-02 15:04:05", args[3])
-	var terminoVotacao, 	erro4 = time.Parse("2006-01-02 15:04:05", args[4])
+	var inicioCandidatura, 	erro1 = time.Parse(formatoData, args[1])
+	var terminoCandidatura, erro2 = time.Parse(formatoData, args[2])
+	var inicioVotacao, 		erro3 = time.Parse(formatoData, args[3])
+	var terminoVotacao, 	erro4 = time.Parse(formatoData, args[4])
 
 	if erro1 != nil {
 		return shim.Error(erro1.Error())
@@ -100,8 +90,10 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(erro4.Error())
 	}
 
+	horarioTransacao,_ := stub.GetTxTimestamp()
+	horarioTransacao = time.Unix(timestamp.Seconds, int64(timestamp.Nanos)).format(formatoData)
 	var votacao = Votacao{
-		ID, JSONTime(inicioCandidatura), JSONTime(terminoCandidatura), JSONTime(inicioVotacao), JSONTime(terminoVotacao),
+		ID, inicioCandidatura.Format(formatoData), terminoCandidatura.Format(formatoData), inicioVotacao.Format(formatoData), terminoVotacao.Format(formatoData), horarioTransacao
 	}
 
 	//verifica unicidade
