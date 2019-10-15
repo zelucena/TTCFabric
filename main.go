@@ -79,10 +79,10 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	var ID 						  = args[0]
-	var inicioCandidatura, 	erro1 = JSONTime.Parse("2006-01-02 15:04:05", args[1])
-	var terminoCandidatura, erro2 = JSONTime.Parse("2006-01-02 15:04:05", args[2])
-	var inicioVotacao, 		erro3 = JSONTime.Parse("2006-01-02 15:04:05", args[3])
-	var terminoVotacao, 	erro4 = JSONTime.Parse("2006-01-02 15:04:05", args[4])
+	var inicioCandidatura, 	erro1 = JSONTime(time.Parse("2006-01-02 15:04:05", args[1]))
+	var terminoCandidatura, erro2 = JSONTime(time.Parse("2006-01-02 15:04:05", args[2]))
+	var inicioVotacao, 		erro3 = JSONTime(time.Parse("2006-01-02 15:04:05", args[3]))
+	var terminoVotacao, 	erro4 = JSONTime(time.Parse("2006-01-02 15:04:05", args[4]))
 
 	if erro1 != nil {
 		return shim.Error(erro1.Error())
