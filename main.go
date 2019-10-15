@@ -79,10 +79,10 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	var ID 						  = args[0]
-	var inicioCandidatura, 	erro1 = JSONTime(time.Parse("2006-01-02 15:04:05", args[1]))
-	var terminoCandidatura, erro2 = JSONTime(time.Parse("2006-01-02 15:04:05", args[2]))
-	var inicioVotacao, 		erro3 = JSONTime(time.Parse("2006-01-02 15:04:05", args[3]))
-	var terminoVotacao, 	erro4 = JSONTime(time.Parse("2006-01-02 15:04:05", args[4]))
+	var inicioCandidatura, 	erro1 = time.Parse("2006-01-02 15:04:05", args[1])
+	var terminoCandidatura, erro2 = time.Parse("2006-01-02 15:04:05", args[2])
+	var inicioVotacao, 		erro3 = time.Parse("2006-01-02 15:04:05", args[3])
+	var terminoVotacao, 	erro4 = time.Parse("2006-01-02 15:04:05", args[4])
 
 	if erro1 != nil {
 		return shim.Error(erro1.Error())
@@ -101,13 +101,13 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	var votacao = Votacao{
-		ID, inicioCandidatura, terminoCandidatura, inicioVotacao, terminoVotacao,
+		ID, JSONTime(inicioCandidatura), JSONTime(terminoCandidatura), JSONTime(inicioVotacao), JSONTime(terminoVotacao),
 	}
 
 	//verifica unicidade
 	val, getStateError := APIstub.GetState(votacao.ID)
 	if val != nil {
-
+		return shim.Error(fmt.Sprintf("%s", "Erro: ID já existe"))
 	}
 	if getStateError != nil {
 		return shim.Error(fmt.Sprintf("%s", getStateError))
