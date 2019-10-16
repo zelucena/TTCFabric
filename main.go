@@ -93,7 +93,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	horarioTransacao,_ := stub.GetTxTimestamp()
 	horarioTransacao = time.Unix(timestamp.Seconds, int64(timestamp.Nanos)).String()
 	var votacao = Votacao{
-		ID, inicioCandidatura.Format(formatoData), terminoCandidatura.Format(formatoData), inicioVotacao.Format(formatoData), terminoVotacao.Format(formatoData), horarioTransacao
+		ID, inicioCandidatura.Format(formatoData), terminoCandidatura.Format(formatoData), inicioVotacao.Format(formatoData), terminoVotacao.Format(formatoData), horarioTransacao,
 	}
 
 	//verifica unicidade
