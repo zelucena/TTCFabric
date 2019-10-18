@@ -20,7 +20,6 @@ type Votacao struct {
 	terminoCandidatura string
 	inicioVotacao string
 	terminoVotacao string
-	cadastro string
 }
 
 type Votante struct {
@@ -89,9 +88,9 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(erro4.Error())
 	}
 
-	horarioTransacao,_ := APIstub.GetTxTimestamp()
-	horarioTransacao = time.Unix(horarioTransacao.Seconds, int64(horarioTransacao.Nanos)).String()
-	var votacao = Votacao{ID, inicioCandidatura.Format(formatoData), terminoCandidatura.Format(formatoData), inicioVotacao.Format(formatoData), terminoVotacao.Format(formatoData), horarioTransacao}
+	//horarioTransacao,_ := APIstub.GetTxTimestamp()
+	//horarioTransacao = time.Unix(horarioTransacao.Seconds, int64(horarioTransacao.Nanos)).String()
+	var votacao = Votacao{ID, inicioCandidatura.Format(formatoData), terminoCandidatura.Format(formatoData), inicioVotacao.Format(formatoData), terminoVotacao.Format(formatoData)}
 
 	//verifica unicidade
 	val, getStateError := APIstub.GetState(votacao.ID)
