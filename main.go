@@ -111,7 +111,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if erroJSON != nil {
 		return shim.Error(fmt.Sprintf("%s", erroJSON))
 	}
-	return shim.Error(votacaoAsBytes)
+	return shim.success(votacaoAsBytes)
 	//var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
 	//
 	//if putStateError != nil {
