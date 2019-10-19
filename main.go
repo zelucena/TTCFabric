@@ -90,7 +90,12 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 
 	//horarioTransacao,_ := APIstub.GetTxTimestamp()
 	//horarioTransacao = time.Unix(horarioTransacao.Seconds, int64(horarioTransacao.Nanos)).String()
-	var votacao = Votacao{ID, inicioCandidatura.Format(formatoData), terminoCandidatura.Format(formatoData), inicioVotacao.Format(formatoData), terminoVotacao.Format(formatoData)}
+	var votacao = Votacao{}
+	votacao.ID = ID
+	votacao.inicioCandidatura 	= inicioCandidatura.Format(formatoData)
+	votacao.terminoCandidatura 	= terminoCandidatura.Format(formatoData)
+	votacao.inicioVotacao		= inicioVotacao.Format(formatoData)
+	votacao.terminoVotacao		= terminoVotacao.Format(formatoData)
 
 	//verifica unicidade
 	val, getStateError := APIstub.GetState(votacao.ID)
@@ -106,16 +111,16 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if erroJSON != nil {
 		return shim.Error(fmt.Sprintf("%s", erroJSON))
 	}
-
-	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
-
-	if putStateError != nil {
-		mensagemErro := fmt.Sprintf("Erro: nao e possivel inserir votacao com id <%d>, devido a %s", votacao.ID, putStateError)
-		fmt.Println(mensagemErro)
-		return shim.Error(mensagemErro)
-	}
-
-	return shim.Success(nil)
+	return shim.Error(votacaoAsBytes)
+	//var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
+	//
+	//if putStateError != nil {
+	//	mensagemErro := fmt.Sprintf("Erro: nao e possivel inserir votacao com id <%d>, devido a %s", votacao.ID, putStateError)
+	//	fmt.Println(mensagemErro)
+	//	return shim.Error(mensagemErro)
+	//}
+	//
+	//return shim.Success(nil)
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
