@@ -150,6 +150,7 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 
 func (s *VotacaoContract) addTeste(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var votacao = Votacao{}
+	
 	votacao.ID = "teste"
 	votacao.inicioCandidatura 	= "2019-01-01 10:00:00"
 	votacao.terminoCandidatura 	= "2019-01-08 23:00:00"
@@ -161,7 +162,7 @@ func (s *VotacaoContract) addTeste(APIstub shim.ChaincodeStubInterface, args []s
 	if erroJSON != nil {
 		return shim.Error(fmt.Sprintf("%s", erroJSON))
 	}
-	
+
 	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
 
 	if putStateError != nil {
