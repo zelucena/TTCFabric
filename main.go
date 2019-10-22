@@ -15,11 +15,11 @@ type Candidato struct {
 }
 
 type Votacao struct {
-	ID                 string `json:"ID"`
-	InicioCandidatura  string `json:"inicioCandidatura"`
-	TerminoCandidatura string `json:"terminoCandidatura"`
-	InicioVotacao      string `json:"inicioVotacao"`
-	TerminoVotacao     string `json:"terminoVotacao"`
+	ID                 string `json:"id"`
+	InicioCandidatura  string `json:"iniciocandidatura"`
+	TerminoCandidatura string `json:"terminocandidatura"`
+	InicioVotacao      string `json:"iniciovotacao"`
+	TerminoVotacao     string `json:"terminovotacao"`
 }
 
 type Votante struct {
