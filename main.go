@@ -15,11 +15,11 @@ type Candidato struct {
 }
 
 type Votacao struct {
-	ID string
-	inicioCandidatura string
-	terminoCandidatura string
-	inicioVotacao string
-	terminoVotacao string
+	ID string `json:"ID"`
+	inicioCandidatura string `json:"inicioCandidatura"`
+	terminoCandidatura string `json:"terminoCandidatura"`
+	inicioVotacao string `json:"inicioVotacao"`
+	terminoVotacao string `json:"terminoVotacao"`
 }
 
 type Votante struct {
@@ -54,6 +54,8 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return s.visualizarCandidatos(APIstub, args)
 	} else if function == "votar" {
 		return s.votar(APIstub, args)
+	} else if function == "addTeste"{
+		return s.addTeste(APIstub, args)
 	}
 
 	return shim.Error("Funcao indisponivel.")
@@ -111,17 +113,16 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if erroJSON != nil {
 		return shim.Error(fmt.Sprintf("%s", erroJSON))
 	}
-	
-	return shim.success(votacaoAsBytes)
-	//var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
-	//
-	//if putStateError != nil {
-	//	mensagemErro := fmt.Sprintf("Erro: nao e possivel inserir votacao com id <%d>, devido a %s", votacao.ID, putStateError)
-	//	fmt.Println(mensagemErro)
-	//	return shim.Error(mensagemErro)
-	//}
-	//
-	//return shim.Success(nil)
+
+	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
+
+	if putStateError != nil {
+		mensagemErro := fmt.Sprintf("Erro: nao e possivel inserir votacao com id <%d>, devido a %s", votacao.ID, putStateError)
+		fmt.Println(mensagemErro)
+		return shim.Error(mensagemErro)
+	}
+
+	return shim.Success(nil)
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
@@ -147,6 +148,24 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 	return shim.Success(nil)
 }
 
+func (s *VotacaoContract) addTeste(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	var votacao = Votacao{}
+	votacao.ID = "teste"
+	votacao.inicioCandidatura 	= "2019-01-01 10:00:00"
+	votacao.terminoCandidatura 	= "2019-01-08 23:00:00"
+	votacao.inicioVotacao		= "2019-07-01 10:00:00"
+	votacao.terminoVotacao		= "2019-07-01 23:00:00"
+
+	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
+
+	if putStateError != nil {
+		mensagemErro := fmt.Sprintf("Erro: nao e possivel inserir votacao com id <%d>, devido a %s", votacao.ID, putStateError)
+		fmt.Println(mensagemErro)
+		return shim.Error(mensagemErro)
+	}
+
+	return shim.Success(nil)
+}
 func main() {
 	err := shim.Start(new(VotacaoContract))
 	if err != nil {
