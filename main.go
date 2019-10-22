@@ -56,6 +56,8 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return s.votar(APIstub, args)
 	} else if function == "addTeste"{
 		return s.addTeste(APIstub, args)
+	} else if function == "queryTeste"{
+		return s.queryTeste(APIstub, args)
 	}
 
 	return shim.Error("Funcao indisponivel.")
@@ -173,6 +175,22 @@ func (s *VotacaoContract) addTeste(APIstub shim.ChaincodeStubInterface, args []s
 
 	return shim.Success(nil)
 }
+
+func (s *VotacaoContract) queryTeste(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	var votacao = Votacao{}
+
+	votacao.ID = "teste"
+	votacao.InicioCandidatura = "2019-01-01 10:00:00"
+	votacao.TerminoCandidatura = "2019-01-08 23:00:00"
+	votacao.InicioVotacao = "2019-07-01 10:00:00"
+	votacao.TerminoVotacao = "2019-07-01 23:00:00"
+
+	var votacaoAsBytes, _ = json.Marshal(votacao)
+
+	return shim.Success(votacaoAsBytes)
+}
+
+
 func main() {
 	err := shim.Start(new(VotacaoContract))
 	if err != nil {
