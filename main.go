@@ -15,11 +15,11 @@ type Candidato struct {
 }
 
 type Votacao struct {
-	ID string `json:"ID"`
-	inicioCandidatura string `json:"inicioCandidatura"`
-	terminoCandidatura string `json:"terminoCandidatura"`
-	inicioVotacao string `json:"inicioVotacao"`
-	terminoVotacao string `json:"terminoVotacao"`
+	ID                 string `json:"ID"`
+	InicioCandidatura  string `json:"inicioCandidatura"`
+	TerminoCandidatura string `json:"terminoCandidatura"`
+	InicioVotacao      string `json:"inicioVotacao"`
+	TerminoVotacao     string `json:"terminoVotacao"`
 }
 
 type Votante struct {
@@ -94,10 +94,10 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	//horarioTransacao = time.Unix(horarioTransacao.Seconds, int64(horarioTransacao.Nanos)).String()
 	var votacao = Votacao{}
 	votacao.ID = ID
-	votacao.inicioCandidatura 	= inicioCandidatura.Format(formatoData)
-	votacao.terminoCandidatura 	= terminoCandidatura.Format(formatoData)
-	votacao.inicioVotacao		= inicioVotacao.Format(formatoData)
-	votacao.terminoVotacao		= terminoVotacao.Format(formatoData)
+	votacao.InicioCandidatura = inicioCandidatura.Format(formatoData)
+	votacao.TerminoCandidatura = terminoCandidatura.Format(formatoData)
+	votacao.InicioVotacao = inicioVotacao.Format(formatoData)
+	votacao.TerminoVotacao = terminoVotacao.Format(formatoData)
 
 	//verifica unicidade
 	val, getStateError := APIstub.GetState(votacao.ID)
@@ -150,12 +150,12 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 
 func (s *VotacaoContract) addTeste(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var votacao = Votacao{}
-	
+
 	votacao.ID = "teste"
-	votacao.inicioCandidatura 	= "2019-01-01 10:00:00"
-	votacao.terminoCandidatura 	= "2019-01-08 23:00:00"
-	votacao.inicioVotacao		= "2019-07-01 10:00:00"
-	votacao.terminoVotacao		= "2019-07-01 23:00:00"
+	votacao.InicioCandidatura = "2019-01-01 10:00:00"
+	votacao.TerminoCandidatura = "2019-01-08 23:00:00"
+	votacao.InicioVotacao = "2019-07-01 10:00:00"
+	votacao.TerminoVotacao = "2019-07-01 23:00:00"
 
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 
