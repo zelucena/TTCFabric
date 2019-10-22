@@ -156,6 +156,12 @@ func (s *VotacaoContract) addTeste(APIstub shim.ChaincodeStubInterface, args []s
 	votacao.inicioVotacao		= "2019-07-01 10:00:00"
 	votacao.terminoVotacao		= "2019-07-01 23:00:00"
 
+	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
+
+	if erroJSON != nil {
+		return shim.Error(fmt.Sprintf("%s", erroJSON))
+	}
+	
 	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
 
 	if putStateError != nil {
