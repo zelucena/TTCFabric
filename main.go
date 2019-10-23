@@ -195,11 +195,11 @@ func (s *VotacaoContract) queryTeste(APIstub shim.ChaincodeStubInterface, args [
 }
 
 func (s *VotacaoContract) getSignedProposal(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	return shim.Success(APIstub.getSignedProposal())
+	return shim.Success(APIstub.GetSignedProposal())
 }
 
 func (s *VotacaoContract) getCreator(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	return shim.Success(APIstub.getCreator())
+	return shim.Success(APIstub.GetCreator())
 }
 
 func main() {
