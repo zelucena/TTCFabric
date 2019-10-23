@@ -201,7 +201,7 @@ func (s *VotacaoContract) getSignedProposal(APIstub shim.ChaincodeStubInterface,
 		return shim.Error(fmt.Sprintf("%s", erroAPI))
 	}
 
-	retornoJSON, erroJSON = json.Marshal(proposal)
+	var retornoJSON, erroJSON = json.Marshal(proposal)
 
 	if erroJSON != nil {
 		return shim.Error(fmt.Sprintf("%s", erroJSON))
@@ -213,7 +213,7 @@ func (s *VotacaoContract) getSignedProposal(APIstub shim.ChaincodeStubInterface,
 func (s *VotacaoContract) getCreator(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var creator, erro = APIstub.GetCreator()
 	if erro != nil {
-		return shim.Error(erro)
+		return shim.Error(fmt.Sprintf("%s", erro))
 	}
 	return shim.Success(creator)
 }
