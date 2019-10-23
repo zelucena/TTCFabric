@@ -58,6 +58,10 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return s.addTeste(APIstub, args)
 	} else if function == "queryTeste"{
 		return s.queryTeste(APIstub, args)
+	} else if function == "getSignedProposal"{
+		return s.getSignedProposal(APIstub, args)
+	} else if function == "getCreator"{
+		return s.getCreator(APIstub, args)
 	}
 
 	return shim.Error("Funcao indisponivel.")
@@ -184,12 +188,19 @@ func (s *VotacaoContract) queryTeste(APIstub shim.ChaincodeStubInterface, args [
 	votacao.TerminoCandidatura = "2019-01-08 23:00:00"
 	votacao.InicioVotacao = "2019-07-01 10:00:00"
 	votacao.TerminoVotacao = "2019-07-01 23:00:00"
-
+	//
 	var votacaoAsBytes, _ = json.Marshal(votacao)
 
 	return shim.Success(votacaoAsBytes)
 }
 
+func (s *VotacaoContract) getSignedProposal(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	return shim.Success(APIstub.getSignedProposal())
+}
+
+func (s *VotacaoContract) getCreator(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	return shim.Success(APIstub.getCreator())
+}
 
 func main() {
 	err := shim.Start(new(VotacaoContract))
