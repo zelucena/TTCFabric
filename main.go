@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
@@ -27,9 +28,51 @@ type Votante struct {
 }
 
 type Voto struct {
-	votante Votante
-	horario string
-	candidato Candidato
+	Assinatura	string `json:"votante"`
+	Timestamp 	string `json:"timestamp"`
+	Candidato 	Candidato `json:"candidato"`
+}
+
+type queryResponse struct {
+	Key        string
+	Value      string
+	Namespace  string
+}
+
+func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString string)([] byte, error) {
+	fmt.Printf("- getQueryResultForQueryString queryString:\n%s\n", queryString)
+	resultsIterator, err := stub.GetQueryResult(queryString)
+	defer resultsIterator.Close()
+	if err != nil {
+		return nil, err
+	}
+	// buffer is a JSON array containing QueryRecords
+	var buffer bytes.Buffer
+	buffer.WriteString("[")
+	bArrayMemberAlreadyWritten := false
+	for resultsIterator.HasNext() {
+		queryResponse,
+			err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+		// Add a comma before array members, suppress it for the first array member
+		if bArrayMemberAlreadyWritten == true {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString("{\"Key\":")
+		buffer.WriteString("\"")
+		buffer.WriteString(queryResponse.Key)
+		buffer.WriteString("\"")
+		buffer.WriteString(", \"Record\":")
+		// Record is a JSON object, so we write as-is
+		buffer.WriteString(string(queryResponse.Value))
+		buffer.WriteString("}")
+		bArrayMemberAlreadyWritten = true
+	}
+	buffer.WriteString("]")
+	fmt.Printf("- getQueryResultForQueryString queryResult:\n%s\n", buffer.String())
+	return buffer.Bytes(), nil
 }
 
 //Esta é a classe da chaincode
@@ -54,14 +97,16 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return s.visualizarCandidatos(APIstub, args)
 	} else if function == "votar" {
 		return s.votar(APIstub, args)
-	} else if function == "addTeste"{
+	} else if function == "addTeste" {
 		return s.addTeste(APIstub, args)
-	} else if function == "queryTeste"{
+	} else if function == "queryTeste" {
 		return s.queryTeste(APIstub, args)
-	} else if function == "getSignedProposal"{
+	} else if function == "getSignedProposal" {
 		return s.getSignedProposal(APIstub, args)
-	} else if function == "getCreator"{
+	} else if function == "getCreator" {
 		return s.getCreator(APIstub, args)
+	} else if function == "auditarVotos" {
+		return s.auditarVotos(APIstub, args)
 	}
 
 	return shim.Error("Funcao indisponivel.")
@@ -96,8 +141,6 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(erro4.Error())
 	}
 
-	//horarioTransacao,_ := APIstub.GetTxTimestamp()
-	//horarioTransacao = time.Unix(horarioTransacao.Seconds, int64(horarioTransacao.Nanos)).String()
 	var votacao = Votacao{}
 	votacao.ID = ID
 	votacao.InicioCandidatura = inicioCandidatura.Format(formatoData)
@@ -151,6 +194,32 @@ func (s *VotacaoContract) visualizarCandidatos(APIstub shim.ChaincodeStubInterfa
 }
 
 func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	var Voto = Voto{}
+
+	var creator, erroCreator = APIstub.GetCreator()
+	if erroCreator != nil {
+		return shim.Error(fmt.Sprintf("%s", erroCreator))
+	}
+
+	var horarioTransacao, erroTimestamp = APIstub.GetTxTimestamp()
+	if erroTimestamp != nil {
+		return shim.Error(fmt.Sprintf("%s", erroTimestamp))
+	}
+
+	horarioTransacao = time.Unix(horarioTransacao.Seconds, int64(horarioTransacao.Nanos)).String()
+
+	Voto.Assinatura = creator
+	Voto.Timestamp  = horarioTransacao
+	Voto.Candidato  = Candidato{}
+	Voto.Candidato.email 	= "email_teste@ttcfabric.com"
+	Voto.Candidato.nome		= "John Doe"
+
+	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
+
+	if putStateError != nil {
+		return shim.Error(putStateError)
+	}
+
 	return shim.Success(nil)
 }
 
@@ -216,6 +285,14 @@ func (s *VotacaoContract) getCreator(APIstub shim.ChaincodeStubInterface, args [
 		return shim.Error(fmt.Sprintf("%s", erro))
 	}
 	return shim.Success(creator)
+}
+
+func (s *VotacaoContract) auditarVotos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	var votos, erroConsulta = getQueryResultForQueryString(APIstub, "")
+	if erroConsulta != nil {
+		return shim.Error(erroConsulta)
+	}
+	return shim.Success(votos)
 }
 
 func main() {
