@@ -214,7 +214,13 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 	Voto.Candidato.email 	= "email_teste@ttcfabric.com"
 	Voto.Candidato.nome		= "John Doe"
 
-	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
+	var VotoAsBytes, erroJSON = json.Marshal(Voto)
+
+	if erroJSON != nil {
+		return shim.Error(fmt.Sprintf("%s", erroJSON))
+	}
+
+	var putStateError = APIstub.PutState(Voto.Assinatura, VotoAsBytes)
 
 	if putStateError != nil {
 		return shim.Error(putStateError)
