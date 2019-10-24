@@ -196,17 +196,18 @@ func (s *VotacaoContract) visualizarCandidatos(APIstub shim.ChaincodeStubInterfa
 func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var Voto = Voto{}
 
-	var creator, erroCreator = APIstub.GetCreator()
-	if erroCreator != nil {
-		return shim.Error(fmt.Sprintf("%s", erroCreator))
-	}
+	//var creator, erroCreator = APIstub.GetCreator()
+	//if erroCreator != nil {
+	//	return shim.Error(fmt.Sprintf("%s", erroCreator))
+	//}
 
 	var horarioTransacao, erroTimestamp = APIstub.GetTxTimestamp()
 	if erroTimestamp != nil {
 		return shim.Error(fmt.Sprintf("%s", erroTimestamp))
 	}
 
-	Voto.Assinatura = fmt.Sprintf("%s", creator)
+	//Voto.Assinatura = fmt.Sprintf("%s", creator)
+	Voto.Assinatura = horarioTransacao.String()
 	Voto.Timestamp  = horarioTransacao.String()
 	Voto.Candidato  = Candidato{}
 	Voto.Candidato.email 	= "email_teste@ttcfabric.com"
