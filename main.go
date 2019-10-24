@@ -206,10 +206,10 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 		return shim.Error(fmt.Sprintf("%s", erroTimestamp))
 	}
 
-	horarioTransacao = time.Unix(horarioTransacao.Seconds, int64(horarioTransacao.Nanos)).String()
+	horarioTransacao = time.Unix(horarioTransacao.Seconds, int64(horarioTransacao.Nanos))
 
 	Voto.Assinatura = creator
-	Voto.Timestamp  = horarioTransacao
+	Voto.Timestamp  = fmt.Sprintf("%s", horarioTransaca)
 	Voto.Candidato  = Candidato{}
 	Voto.Candidato.email 	= "email_teste@ttcfabric.com"
 	Voto.Candidato.nome		= "John Doe"
@@ -223,7 +223,7 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 	var putStateError = APIstub.PutState(Voto.Assinatura, VotoAsBytes)
 
 	if putStateError != nil {
-		return shim.Error(putStateError)
+		return shim.Error(fmt.Sprintf("%s", putStateError))
 	}
 
 	return shim.Success(nil)
@@ -296,7 +296,7 @@ func (s *VotacaoContract) getCreator(APIstub shim.ChaincodeStubInterface, args [
 func (s *VotacaoContract) auditarVotos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var votos, erroConsulta = getQueryResultForQueryString(APIstub, "")
 	if erroConsulta != nil {
-		return shim.Error(erroConsulta)
+		return shim.Error(fmt.Sprintf("%s", erroConsulta))
 	}
 	return shim.Success(votos)
 }
