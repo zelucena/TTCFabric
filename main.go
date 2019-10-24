@@ -208,8 +208,8 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 
 	horarioTransacao = time.Unix(horarioTransacao.Seconds, int64(horarioTransacao.Nanos))
 
-	Voto.Assinatura = creator
-	Voto.Timestamp  = fmt.Sprintf("%s", horarioTransaca)
+	Voto.Assinatura = fmt.Sprintf("%s", creator)
+	Voto.Timestamp  = fmt.Sprintf("%s", horarioTransacao)
 	Voto.Candidato  = Candidato{}
 	Voto.Candidato.email 	= "email_teste@ttcfabric.com"
 	Voto.Candidato.nome		= "John Doe"
