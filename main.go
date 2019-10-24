@@ -293,7 +293,7 @@ func (s *VotacaoContract) getCreator(APIstub shim.ChaincodeStubInterface, args [
 }
 
 func (s *VotacaoContract) auditarVotos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var votos, erroConsulta = getQueryResultForQueryString(APIstub, "")
+	var votos, erroConsulta = getQueryResultForQueryString(APIstub, "{\"selector\": {\"docType\":\"Voto\"}}")
 	if erroConsulta != nil {
 		return shim.Error(fmt.Sprintf("%s", erroConsulta))
 	}
