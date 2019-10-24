@@ -45,20 +45,14 @@ type queryResponse struct {
 //Esta é a classe da chaincode
 type VotacaoContract struct { }
 
-func (s *VotacaoContract) getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString string)([] byte, error) {
-	fmt.Printf("- getQueryResultForQueryString queryString:\n%s\n", queryString)
-	resultsIterator, err := stub.GetQueryResult(queryString)
-	defer resultsIterator.Close()
-	if err != nil {
-		return nil, err
-	}
-	// buffer is a JSON array containing QueryRecords
+func constructQueryResponseFromIterator(resultsIterator shim.StateQueryIteratorInterface) (*bytes.Buffer, error) {
+	// buffer is a JSON array containing QueryResults
 	var buffer bytes.Buffer
 	buffer.WriteString("[")
+
 	bArrayMemberAlreadyWritten := false
 	for resultsIterator.HasNext() {
-		queryResponse,
-			err := resultsIterator.Next()
+		queryResponse, err := resultsIterator.Next()
 		if err != nil {
 			return nil, err
 		}
@@ -70,6 +64,7 @@ func (s *VotacaoContract) getQueryResultForQueryString(stub shim.ChaincodeStubIn
 		buffer.WriteString("\"")
 		buffer.WriteString(queryResponse.Key)
 		buffer.WriteString("\"")
+
 		buffer.WriteString(", \"Record\":")
 		// Record is a JSON object, so we write as-is
 		buffer.WriteString(string(queryResponse.Value))
@@ -77,9 +72,30 @@ func (s *VotacaoContract) getQueryResultForQueryString(stub shim.ChaincodeStubIn
 		bArrayMemberAlreadyWritten = true
 	}
 	buffer.WriteString("]")
+
+	return &buffer, nil
+}
+
+func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString string) ([]byte, error) {
+
+	fmt.Printf("- getQueryResultForQueryString queryString:\n%s\n", queryString)
+
+	resultsIterator, err := stub.GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	buffer, err := constructQueryResponseFromIterator(resultsIterator)
+	if err != nil {
+		return nil, err
+	}
+
 	fmt.Printf("- getQueryResultForQueryString queryResult:\n%s\n", buffer.String())
+
 	return buffer.Bytes(), nil
 }
+
 
 func (s *VotacaoContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
 	return shim.Success(nil)
@@ -299,9 +315,9 @@ func (s *VotacaoContract) getCreator(APIstub shim.ChaincodeStubInterface, args [
 }
 
 func (s *VotacaoContract) auditarVotos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var votos, erroConsulta = s.getQueryResultForQueryString(APIstub, "{\"selector\": {\"doctype\":\"voto\"}}")
+	var votos, erroConsulta = getQueryResultForQueryString(APIstub, "{\"selector\": {\"doctype\":\"voto\"}}")
 	if erroConsulta != nil {
-		return shim.Error(fmt.Sprintf("%s", erroConsulta))
+		return shim.Error(erroConsulta.Error())
 	}
 	return shim.Success(votos)
 }
