@@ -11,11 +11,13 @@ import (
 
 
 type Candidato struct {
-	nome string
-	email string
+	ObjectType	string `json:"doctype"`
+	Nome		string `json:"nome"`
+	Email		string `json:"email"`
 }
 
 type Votacao struct {
+	ObjectType		   string `json:"doctype"`
 	ID                 string `json:"id"`
 	InicioCandidatura  string `json:"iniciocandidatura"`
 	TerminoCandidatura string `json:"terminocandidatura"`
@@ -28,9 +30,10 @@ type Votante struct {
 }
 
 type Voto struct {
-	Assinatura	string `json:"votante"`
-	Timestamp 	string `json:"timestamp"`
-	Candidato 	Candidato `json:"candidato"`
+	ObjectType 	string 		`json:"doctype"`
+	Assinatura	string 		`json:"votante"`
+	Timestamp 	string 		`json:"timestamp"`
+	Candidato 	Candidato 	`json:"candidato"`
 }
 
 type queryResponse struct {
@@ -142,11 +145,12 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	var votacao = Votacao{}
-	votacao.ID = ID
-	votacao.InicioCandidatura = inicioCandidatura.Format(formatoData)
-	votacao.TerminoCandidatura = terminoCandidatura.Format(formatoData)
-	votacao.InicioVotacao = inicioVotacao.Format(formatoData)
-	votacao.TerminoVotacao = terminoVotacao.Format(formatoData)
+	votacao.ObjectType			= "votacao"
+	votacao.ID 					= ID
+	votacao.InicioCandidatura 	= inicioCandidatura.Format(formatoData)
+	votacao.TerminoCandidatura 	= terminoCandidatura.Format(formatoData)
+	votacao.InicioVotacao 		= inicioVotacao.Format(formatoData)
+	votacao.TerminoVotacao 		= terminoVotacao.Format(formatoData)
 
 	//verifica unicidade
 	val, getStateError := APIstub.GetState(votacao.ID)
@@ -207,11 +211,12 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 	}
 
 	//Voto.Assinatura = fmt.Sprintf("%s", creator)
+	Voto.ObjectType	= "voto"
 	Voto.Assinatura = horarioTransacao.String()
 	Voto.Timestamp  = horarioTransacao.String()
 	Voto.Candidato  = Candidato{}
-	Voto.Candidato.email 	= "email_teste@ttcfabric.com"
-	Voto.Candidato.nome		= "John Doe"
+	Voto.Candidato.Email 	= "email_teste@ttcfabric.com"
+	Voto.Candidato.Nome		= "John Doe"
 
 	var VotoAsBytes, erroJSON = json.Marshal(Voto)
 
@@ -231,11 +236,12 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 func (s *VotacaoContract) addTeste(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var votacao = Votacao{}
 
-	votacao.ID = "teste"
-	votacao.InicioCandidatura = "2019-01-01 10:00:00"
-	votacao.TerminoCandidatura = "2019-01-08 23:00:00"
-	votacao.InicioVotacao = "2019-07-01 10:00:00"
-	votacao.TerminoVotacao = "2019-07-01 23:00:00"
+	votacao.ObjectType 			= "votacao"
+	votacao.ID 					= "teste"
+	votacao.InicioCandidatura 	= "2019-01-01 10:00:00"
+	votacao.TerminoCandidatura 	= "2019-01-08 23:00:00"
+	votacao.InicioVotacao 		= "2019-07-01 10:00:00"
+	votacao.TerminoVotacao 		= "2019-07-01 23:00:00"
 
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 
@@ -257,11 +263,11 @@ func (s *VotacaoContract) addTeste(APIstub shim.ChaincodeStubInterface, args []s
 func (s *VotacaoContract) queryTeste(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var votacao = Votacao{}
 
-	votacao.ID = "teste"
-	votacao.InicioCandidatura = "2019-01-01 10:00:00"
-	votacao.TerminoCandidatura = "2019-01-08 23:00:00"
-	votacao.InicioVotacao = "2019-07-01 10:00:00"
-	votacao.TerminoVotacao = "2019-07-01 23:00:00"
+	votacao.ID 					= "teste"
+	votacao.InicioCandidatura 	= "2019-01-01 10:00:00"
+	votacao.TerminoCandidatura 	= "2019-01-08 23:00:00"
+	votacao.InicioVotacao 		= "2019-07-01 10:00:00"
+	votacao.TerminoVotacao 		= "2019-07-01 23:00:00"
 	//
 	var votacaoAsBytes, _ = json.Marshal(votacao)
 
@@ -293,7 +299,7 @@ func (s *VotacaoContract) getCreator(APIstub shim.ChaincodeStubInterface, args [
 }
 
 func (s *VotacaoContract) auditarVotos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var votos, erroConsulta = getQueryResultForQueryString(APIstub, "{\"selector\": {\"docType\":\"Voto\"}}")
+	var votos, erroConsulta = getQueryResultForQueryString(APIstub, "{\"selector\": {\"doctype\":\"voto\"}}")
 	if erroConsulta != nil {
 		return shim.Error(fmt.Sprintf("%s", erroConsulta))
 	}
