@@ -1,104 +1,97 @@
 package main
 
 import (
-	"bytes"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/peer"
+	"github.com/hyperledger/fabric/core/chaincode/lib/cid"
 	"time"
 )
 
 
 type Candidato struct {
 	ObjectType	string `json:"doctype"`
+	ID			string `json:"id"`
 	Nome		string `json:"nome"`
 	Email		string `json:"email"`
 }
 
 type Votacao struct {
-	ObjectType		   string `json:"doctype"`
-	ID                 string `json:"id"`
-	InicioCandidatura  string `json:"iniciocandidatura"`
-	TerminoCandidatura string `json:"terminocandidatura"`
-	InicioVotacao      string `json:"iniciovotacao"`
-	TerminoVotacao     string `json:"terminovotacao"`
+	ObjectType		   string 				`json:"doctype"`
+	ID                 string 				`json:"id"`
+	InicioCandidatura  string 				`json:"iniciocandidatura"`
+	TerminoCandidatura string 				`json:"terminocandidatura"`
+	InicioVotacao      string 				`json:"iniciovotacao"`
+	TerminoVotacao     string 				`json:"terminovotacao"`
+	Candidatos		map[string]Candidato 	`json:"candidatos"`
+	Votos			map[string]Voto			`json:"votos"`
 }
 
 type Votante struct {
-
+	ObjectType 	string 		`json:"doctype"`
+	ID			string		`json:"id"`
 }
 
 type Voto struct {
 	ObjectType 	string 		`json:"doctype"`
-	Assinatura	string 		`json:"votante"`
+	Votante		Votante 	`json:"votante"`
 	Timestamp 	string 		`json:"timestamp"`
 	Candidato 	Candidato 	`json:"candidato"`
-}
-
-type queryResponse struct {
-	Key        string
-	Value      string
-	Namespace  string
 }
 
 //Esta é a classe da chaincode
 type VotacaoContract struct { }
 
-func constructQueryResponseFromIterator(resultsIterator shim.StateQueryIteratorInterface) (*bytes.Buffer, error) {
-	// buffer is a JSON array containing QueryResults
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
+func (s *VotacaoContract) InitVotacao(APIstub shim.ChaincodeStubInterface) peer.Response {
+	var votacao, GetStateError = APIstub.getState("votacao")
 
-	bArrayMemberAlreadyWritten := false
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return nil, err
+	if GetStateError != nil {
+		return shim.Error(GetStateError.Error())
+	}
+
+	if votacao == nil {
+		votacao = Votacao{
+			ObjectType:        	"votacao",
+			ID:                	"votacao",
+			Candidatos:		   	make(map[string]Candidato),
+			Votos:				make(map[string]Voto),
 		}
-		// Add a comma before array members, suppress it for the first array member
-		if bArrayMemberAlreadyWritten == true {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString("{\"Key\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Record\":")
-		// Record is a JSON object, so we write as-is
-		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString("}")
-		bArrayMemberAlreadyWritten = true
 	}
-	buffer.WriteString("]")
 
-	return &buffer, nil
+	var retornoJSON, erroJSON = json.Marshal(votacao)
+
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
+
+	var putStateError = APIstub.PutState("votacao", retornoJSON)
+
+	if putStateError != nil {
+		return shim.Error(putStateError.Error())
+	}
+
+	return shim.Success(nil)
 }
-
-func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString string) ([]byte, error) {
-
-	fmt.Printf("- getQueryResultForQueryString queryString:\n%s\n", queryString)
-
-	resultsIterator, err := stub.GetQueryResult(queryString)
-	if err != nil {
-		return nil, err
-	}
-	defer resultsIterator.Close()
-
-	buffer, err := constructQueryResponseFromIterator(resultsIterator)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Printf("- getQueryResultForQueryString queryResult:\n%s\n", buffer.String())
-
-	return buffer.Bytes(), nil
-}
-
 
 func (s *VotacaoContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
-	return shim.Success(nil)
+	return s.InitVotacao(APIstub)
+}
+
+func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votacao, error) {
+	var state, GetStateError = APIstub.getState("votacao")
+
+	if GetStateError != nil {
+		return Votacao{}, GetStateError
+	}
+
+	var votacao = Votacao{}
+	var unmarshalErro = json.Unmarshal(state, &votacao)
+	if unmarshalErro != nil {
+		return Votacao{}, unmarshalErro
+	}
+	return votacao, nil
 }
 
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
@@ -120,25 +113,24 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return s.addTeste(APIstub, args)
 	} else if function == "queryTeste" {
 		return s.queryTeste(APIstub, args)
-	} else if function == "getSignedProposal" {
-		return s.getSignedProposal(APIstub, args)
-	} else if function == "getCreator" {
-		return s.getCreator(APIstub, args)
-	} else if function == "auditarVotos" {
-		return s.auditarVotos(APIstub, args)
 	}
 
 	return shim.Error("Funcao indisponivel.")
 }
 
-//estilo 1, recebendo objeto
+/**
+Vamos assumir a existência de apenas uma votação por canal, portanto dentro de uma chaincode, apenas um objeto de votação
+O objeto de votação pode ser editado contanto que não haja votos
+ */
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	//definir formato de entrada
 	formatoData := "2006-01-02 15:04:05"
-	if len(args) != 5 {
-		return shim.Error("Esperados 6 parametros: Metodo, ID, inicio candidatura, termino candidatura, inicio votacao, termino votacao")
+
+	//validar parâmetros de entrada
+	if len(args) != 4 {
+		return shim.Error("Parâmetros esperados: inicio candidatura, termino candidatura, inicio votacao, termino votacao")
 	}
 
-	var ID 						  = args[0]
 	var inicioCandidatura, 	erro1 = time.Parse(formatoData, args[1])
 	var terminoCandidatura, erro2 = time.Parse(formatoData, args[2])
 	var inicioVotacao, 		erro3 = time.Parse(formatoData, args[3])
@@ -160,171 +152,281 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(erro4.Error())
 	}
 
+	if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
+		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	}
+
+	if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
+		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	}
+
+	state, getStateError := APIstub.GetState("votacao")
+
+	if getStateError != nil {
+		return shim.Error(getStateError.Error())
+	}
+
 	var votacao = Votacao{}
-	votacao.ObjectType			= "votacao"
-	votacao.ID 					= ID
+
+	if state != nil {
+		var unmarshalErro = json.Unmarshal(state, &votacao)
+		if unmarshalErro != nil {
+			return shim.Error(unmarshalErro.Error())
+		}
+
+		if leng(votacao.Votos) > 0 {
+			return shim.Error("Não é possível alterar a votação, já existem votos computados")
+		}
+	} else {
+		votacao.ObjectType			= "votacao"
+		votacao.ID 					= "votacao"
+	}
+
 	votacao.InicioCandidatura 	= inicioCandidatura.Format(formatoData)
 	votacao.TerminoCandidatura 	= terminoCandidatura.Format(formatoData)
 	votacao.InicioVotacao 		= inicioVotacao.Format(formatoData)
 	votacao.TerminoVotacao 		= terminoVotacao.Format(formatoData)
 
-	//verifica unicidade
-	val, getStateError := APIstub.GetState(votacao.ID)
-	if val != nil {
-		return shim.Error(fmt.Sprintf("%s", "Erro: ID já existe"))
-	}
-	if getStateError != nil {
-		return shim.Error(fmt.Sprintf("%s", getStateError))
-	}
-
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 
 	if erroJSON != nil {
-		return shim.Error(fmt.Sprintf("%s", erroJSON))
+		return shim.Error(erroJSON.Error())
 	}
 
 	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
 
 	if putStateError != nil {
-		mensagemErro := fmt.Sprintf("Erro: nao e possivel inserir votacao com id <%d>, devido a %s", votacao.ID, putStateError)
-		fmt.Println(mensagemErro)
-		return shim.Error(mensagemErro)
+		return shim.Error(putStateError.Error())
 	}
 
 	return shim.Success(nil)
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-
-	return shim.Success(nil)
-}
-
-//estilo 2, recebendo lista
-func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	votacaoAsBytes, _ := APIstub.GetState(args[0])
-	if votacaoAsBytes == nil {
-		return shim.Error("Nao foi possivel localizar votacao")
-	}
-	return shim.Success(votacaoAsBytes)
-}
-
-func (s *VotacaoContract) visualizarCandidatos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-
-	return shim.Success(nil)
-}
-
-func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var Voto = Voto{}
-
-	//var creator, erroCreator = APIstub.GetCreator()
-	//if erroCreator != nil {
-	//	return shim.Error(fmt.Sprintf("%s", erroCreator))
-	//}
-
-	var horarioTransacao, erroTimestamp = APIstub.GetTxTimestamp()
-	if erroTimestamp != nil {
-		return shim.Error(fmt.Sprintf("%s", erroTimestamp))
+	formatoData := "2006-01-02 15:04:05"
+	var dataAtual = time.Now()
+	if len(args) != 3 {
+		return shim.Error("Esperado: ID, nome, email")
 	}
 
-	//Voto.Assinatura = fmt.Sprintf("%s", creator)
-	Voto.ObjectType	= "voto"
-	Voto.Assinatura = horarioTransacao.String()
-	Voto.Timestamp  = horarioTransacao.String()
-	Voto.Candidato  = Candidato{}
-	Voto.Candidato.Email 	= "email_teste@ttcfabric.com"
-	Voto.Candidato.Nome		= "John Doe"
+	var votacao, erroVotacao = s.getVotacao(APIstub)
 
-	var VotoAsBytes, erroJSON = json.Marshal(Voto)
-
-	if erroJSON != nil {
-		return shim.Error(fmt.Sprintf("%s", erroJSON))
+	if erroVotacao != nil {
+		return shim.Error(erroVotacao.Error())
 	}
 
-	var putStateError = APIstub.PutState(Voto.Assinatura, VotoAsBytes)
+	var inicioCandidatura,  erroFormatoInicio = time.Parse(formatoData, votacao.InicioCandidatura)
 
-	if putStateError != nil {
-		return shim.Error(fmt.Sprintf("%s", putStateError))
+	if erroFormatoInicio != nil {
+		return shim.Error(erroFormatoInicio.Error())
 	}
 
-	return shim.Success(nil)
-}
+	var terminoCandidatura, erroFormatoFim = time.Parse(formatoData, votacao.InicioCandidatura)
 
-func (s *VotacaoContract) addTeste(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var votacao = Votacao{}
+	if erroFormatoFim != nil {
+		return shim.Error(erroFormatoFim.Error())
+	}
 
-	votacao.ObjectType 			= "votacao"
-	votacao.ID 					= "teste"
-	votacao.InicioCandidatura 	= "2019-01-01 10:00:00"
-	votacao.TerminoCandidatura 	= "2019-01-08 23:00:00"
-	votacao.InicioVotacao 		= "2019-07-01 10:00:00"
-	votacao.TerminoVotacao 		= "2019-07-01 23:00:00"
+	if inicioCandidatura.After(dataAtual) {
+		return shim.Error("O periodo de candidaturas ainda não comecou")
+	}
+
+	if terminoCandidatura.Before(dataAtual) {
+		return shim.Error("O periodo de candidaturas ja terminou")
+	}
+
+	var candidato = Candidato{
+		ObjectType: "candidato",
+		ID:         args[0],
+		Nome:       args[1],
+		Email:      args[2],
+	}
+
+	for _, v := range votacao.Candidatos {
+		if v.ID == candidato.ID {
+			return shim.Error("ID já inserido")
+		}
+
+		if v.Email == candidato.Email {
+			return shim.Error("Email já inserido")
+		}
+	}
+
+	votacao.Candidatos["id"] = candidato
 
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 
 	if erroJSON != nil {
-		return shim.Error(fmt.Sprintf("%s", erroJSON))
+		return shim.Error(erroJSON.Error())
 	}
 
 	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
 
 	if putStateError != nil {
-		mensagemErro := fmt.Sprintf("Erro: nao e possivel inserir votacao com id <%d>, devido a %s", votacao.ID, putStateError)
-		fmt.Println(mensagemErro)
-		return shim.Error(mensagemErro)
+		return shim.Error(putStateError.Error())
 	}
 
 	return shim.Success(nil)
 }
 
-func (s *VotacaoContract) queryTeste(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var votacao = Votacao{}
+func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	var votacao, erro = s.getVotacao(APIstub)
 
-	votacao.ID 					= "teste"
-	votacao.InicioCandidatura 	= "2019-01-01 10:00:00"
-	votacao.TerminoCandidatura 	= "2019-01-08 23:00:00"
-	votacao.InicioVotacao 		= "2019-07-01 10:00:00"
-	votacao.TerminoVotacao 		= "2019-07-01 23:00:00"
-	//
-	var votacaoAsBytes, _ = json.Marshal(votacao)
+	if erro != nil {
+		return shim.Error(erro.Error())
+	}
 
+	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
+
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
 	return shim.Success(votacaoAsBytes)
 }
 
-func (s *VotacaoContract) getSignedProposal(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var proposal, erroAPI = APIstub.GetSignedProposal()
+func (s *VotacaoContract) visualizarVotos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	var votacao, erro = s.getVotacao(APIstub)
 
-	if erroAPI != nil {
-		return shim.Error(fmt.Sprintf("%s", erroAPI))
+	if erro != nil {
+		return shim.Error(erro.Error())
 	}
 
-	var retornoJSON, erroJSON = json.Marshal(proposal)
+	var votosAsBytes, erroJSON = json.Marshal(votacao.Votos)
 
 	if erroJSON != nil {
-		return shim.Error(fmt.Sprintf("%s", erroJSON))
+		return shim.Error(erroJSON.Error())
 	}
-
-	return shim.Success(retornoJSON)
+	return shim.Success(votosAsBytes)
 }
 
-func (s *VotacaoContract) getCreator(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var creator, erro = APIstub.GetCreator()
+func (s *VotacaoContract) visualizarVoto(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	var votacao, erro = s.getVotacao(APIstub)
+
 	if erro != nil {
-		return shim.Error(fmt.Sprintf("%s", erro))
+		return shim.Error(erro.Error())
 	}
-	return shim.Success(creator)
+
+	votanteID, erroID := cid.GetID(APIstub)
+
+	if erroID != nil {
+		return shim.Error(erro.Error())
+	}
+	votanteHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(votanteID)))
+
+	var voto = Voto{}
+	if votacao.Votos[votanteHash] == voto {
+		return shim.Error("Este cliente ainda nao votou")
+	}
+
+	var votoAsBytes, erroJSON = json.Marshal(votacao.Votos[votanteHash])
+
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
+	return shim.Success(votoAsBytes)
 }
 
-func (s *VotacaoContract) auditarVotos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var votos, erroConsulta = getQueryResultForQueryString(APIstub, "{\"selector\": {\"doctype\":\"voto\"}}")
-	if erroConsulta != nil {
-		return shim.Error(erroConsulta.Error())
+func (s *VotacaoContract) visualizarCandidatos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	var votacao, erro = s.getVotacao(APIstub)
+
+	if erro != nil {
+		return shim.Error(erro.Error())
 	}
-	return shim.Success(votos)
+
+	var candidatosAsBytes, erroJSON = json.Marshal(votacao.Candidatos)
+
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
+	return shim.Success(candidatosAsBytes)
+}
+
+func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	formatoData 	:= "2006-01-02 15:04:05"
+	dataAtual		:= time.Now()
+	candidatoID		:= args[0]
+
+	var votacao, erroVotacao = s.getVotacao(APIstub)
+
+	if erroVotacao != nil {
+		return shim.Error(erroVotacao.Error())
+	}
+
+	var inicioVotacao,  erroFormatoInicio = time.Parse(formatoData, votacao.InicioVotacao)
+
+	if erroFormatoInicio != nil {
+		return shim.Error(erroFormatoInicio.Error())
+	}
+
+	var terminoVotacao, erroFormatoFim = time.Parse(formatoData, votacao.TerminoVotacao)
+
+	if erroFormatoFim != nil {
+		return shim.Error(erroFormatoFim.Error())
+	}
+
+	if inicioVotacao.After(dataAtual) {
+		return shim.Error("O periodo de candidaturas ainda não comecou")
+	}
+
+	if terminoVotacao.Before(dataAtual) {
+		return shim.Error("O periodo de candidaturas ja terminou")
+	}
+
+	if len(args) != 1 {
+		return shim.Error("Esperado: ID do candidato")
+	}
+
+	votanteID, erroID := cid.GetID(APIstub)
+
+	if erroID != nil {
+		return shim.Error(erro.Error())
+	}
+	votanteHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(votanteID)))
+
+	var voto = Voto{}
+	if votacao.Votos[votanteHash] != voto {
+		return shim.Error("Não é permitido votar duas vezes")
+	}
+
+	var candidatoBranco = Candidato{}
+	if votacao.Candidatos[candidatoID] == candidatoBranco {
+		return shim.Error("Candidato inválido")
+	}
+
+	var horarioTransacao, erroTimestamp = APIstub.GetTxTimestamp()
+	if erroTimestamp != nil {
+		return shim.Error(erroTimestamp.Error())
+	}
+
+	voto.ObjectType	= "voto"
+	voto.Votante 	= Votante{
+		ObjectType: "votante",
+		ID:         votanteHash,
+	}
+
+	voto.Timestamp  = horarioTransacao.String()
+	voto.Candidato  = votacao.Candidatos[candidatoID]
+
+	votacao.Votos[votanteHash] = voto
+
+	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
+
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
+
+	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
+
+	if putStateError != nil {
+		return shim.Error(putStateError.Error())
+	}
+
+	return shim.Success(nil)
 }
 
 func main() {
 	err := shim.Start(new(VotacaoContract))
 	if err != nil {
-		fmt.Printf("Error starting chaincode: %s", err)
+		fmt.Printf(err.Error())
 	}
 }
