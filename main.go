@@ -8,14 +8,16 @@ import (
 	"github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/core/chaincode/lib/cid"
 	"time"
+	"sort"
 )
 
 
 type Candidato struct {
-	ObjectType	string `json:"doctype"`
-	ID			string `json:"id"`
-	Nome		string `json:"nome"`
-	Email		string `json:"email"`
+	ObjectType	string  `json:"doctype"`
+	ID			string  `json:"id"`
+	Nome		string  `json:"nome"`
+	Email		string  `json:"email"`
+	NumeroVotos int		`json:"numerovotos"`
 }
 
 type Votacao struct {
@@ -41,8 +43,14 @@ type Voto struct {
 	Candidato 	Candidato 	`json:"candidato"`
 }
 
-//Esta é a classe da chaincode
+//Classe da chaincode
 type VotacaoContract struct { }
+
+// ByNumeroVotos implementa sort.Interface baseado no campo Candidato.Votos
+type ByNumeroVotos []Candidato
+func (a ByNumeroVotos) Len() int           { return len(a) }
+func (a ByNumeroVotos) Less(i, j int) bool { return a[i].NumeroVotos > a[j].NumeroVotos }
+func (a ByNumeroVotos) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 func (s *VotacaoContract) InitVotacao(APIstub shim.ChaincodeStubInterface) peer.Response {
 	var votacao, GetStateError = APIstub.getState("votacao")
@@ -95,9 +103,21 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 }
 
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
-
 	// Retrieve the requested Smart Contract function and arguments
 	function, args := APIstub.GetFunctionAndParameters()
+
+	clientID, erroID := cid.GetID(APIstub)
+	clientMSPID, erroMSPID := cid.GetMSPID(APIstub)
+
+	if erroID != nil {
+		return shim.Error(erroID.Error())
+	}
+
+	if erroMSPID != nil {
+		return shim.Error(erroID.Error())
+	}
+	clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
+
 	// Route to the appropriate handler function to interact with the ledger
 	if function == "cadastrarVotacao" {
 		return s.cadastrarVotacao(APIstub, args)
@@ -108,11 +128,11 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 	} else if function == "visualizarCandidatos" {
 		return s.visualizarCandidatos(APIstub, args)
 	} else if function == "votar" {
-		return s.votar(APIstub, args)
-	} else if function == "addTeste" {
-		return s.addTeste(APIstub, args)
-	} else if function == "queryTeste" {
-		return s.queryTeste(APIstub, args)
+		return s.votar(APIstub, args, clientHash)
+	} else if function == "visualizarVoto" {
+		return s.visualizarVoto(APIstub, args, clientHash)
+	} else if function == "divulgarResultados" {
+		return s.divulgarResultados(APIstub, args)
 	}
 
 	return shim.Error("Funcao indisponivel.")
@@ -237,9 +257,10 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 
 	var candidato = Candidato{
 		ObjectType: "candidato",
-		ID:         args[0],
-		Nome:       args[1],
-		Email:      args[2],
+		ID:          args[0],
+		Nome:        args[1],
+		Email:       args[2],
+		NumeroVotos: 0,
 	}
 
 	for _, v := range votacao.Candidatos {
@@ -270,10 +291,21 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 }
 
 func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	formatoData := "2006-01-02 15:04:05"
 	var votacao, erro = s.getVotacao(APIstub)
-
 	if erro != nil {
 		return shim.Error(erro.Error())
+	}
+
+	var terminoVotacao, erroFormatoFim = time.Parse(formatoData, votacao.TerminoVotacao)
+
+	if erroFormatoFim != nil {
+		return shim.Error(erroFormatoFim.Error())
+	}
+
+	var dataAtual = time.Now()
+	if terminoVotacao.After(dataAtual) {
+		return shim.Error("O periodo de votacao ainda não encerrou")
 	}
 
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
@@ -285,10 +317,22 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 }
 
 func (s *VotacaoContract) visualizarVotos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	formatoData := "2006-01-02 15:04:05"
 	var votacao, erro = s.getVotacao(APIstub)
 
 	if erro != nil {
 		return shim.Error(erro.Error())
+	}
+
+	var terminoVotacao, erroFormatoFim = time.Parse(formatoData, votacao.TerminoVotacao)
+
+	if erroFormatoFim != nil {
+		return shim.Error(erroFormatoFim.Error())
+	}
+
+	var dataAtual = time.Now()
+	if terminoVotacao.After(dataAtual) {
+		return shim.Error("O período de votação ainda não encerrou")
 	}
 
 	var votosAsBytes, erroJSON = json.Marshal(votacao.Votos)
@@ -299,26 +343,62 @@ func (s *VotacaoContract) visualizarVotos(APIstub shim.ChaincodeStubInterface, a
 	return shim.Success(votosAsBytes)
 }
 
-func (s *VotacaoContract) visualizarVoto(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (s *VotacaoContract) divulgarResultados(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	formatoData := "2006-01-02 15:04:05"
 	var votacao, erro = s.getVotacao(APIstub)
 
 	if erro != nil {
 		return shim.Error(erro.Error())
 	}
 
-	votanteID, erroID := cid.GetID(APIstub)
+	var terminoVotacao, erroFormatoFim = time.Parse(formatoData, votacao.TerminoVotacao)
 
-	if erroID != nil {
+	if erroFormatoFim != nil {
+		return shim.Error(erroFormatoFim.Error())
+	}
+
+	var dataAtual = time.Now()
+	if terminoVotacao.After(dataAtual) {
+		return shim.Error("O periodo de votacao ainda não encerrou")
+	}
+
+	candidatos := make(map[string]*Candidato)
+	for id, candidato := range votacao.Candidatos {
+		candidatos[id] = &candidato
+		candidatos[id].NumeroVotos = 0
+	}
+
+	for _, voto := range votacao.Votos {
+		candidatos[voto.Candidato.ID].NumeroVotos++
+	}
+
+	var candidatosSlice []Candidato
+
+	for _, candidato := range candidatos {
+		candidatosSlice = candidatosSlice.append(candidato)
+	}
+	sort.Sort(ByNumeroVotos(candidatosSlice))
+	var votosAsBytes, erroJSON = json.Marshal(candidatosSlice)
+
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
+	return shim.Success(votosAsBytes)
+}
+
+func (s *VotacaoContract) visualizarVoto(APIstub shim.ChaincodeStubInterface, args []string, clientHash string) peer.Response {
+	var votacao, erro = s.getVotacao(APIstub)
+
+	if erro != nil {
 		return shim.Error(erro.Error())
 	}
-	votanteHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(votanteID)))
 
 	var voto = Voto{}
-	if votacao.Votos[votanteHash] == voto {
+	if votacao.Votos[clientHash] == voto {
 		return shim.Error("Este cliente ainda nao votou")
 	}
 
-	var votoAsBytes, erroJSON = json.Marshal(votacao.Votos[votanteHash])
+	var votoAsBytes, erroJSON = json.Marshal(votacao.Votos[clientHash])
 
 	if erroJSON != nil {
 		return shim.Error(erroJSON.Error())
@@ -341,7 +421,7 @@ func (s *VotacaoContract) visualizarCandidatos(APIstub shim.ChaincodeStubInterfa
 	return shim.Success(candidatosAsBytes)
 }
 
-func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []string, clientHash string) peer.Response {
 	formatoData 	:= "2006-01-02 15:04:05"
 	dataAtual		:= time.Now()
 	candidatoID		:= args[0]
@@ -376,15 +456,8 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 		return shim.Error("Esperado: ID do candidato")
 	}
 
-	votanteID, erroID := cid.GetID(APIstub)
-
-	if erroID != nil {
-		return shim.Error(erro.Error())
-	}
-	votanteHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(votanteID)))
-
 	var voto = Voto{}
-	if votacao.Votos[votanteHash] != voto {
+	if votacao.Votos[clientHash] != voto {
 		return shim.Error("Não é permitido votar duas vezes")
 	}
 
@@ -401,13 +474,13 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 	voto.ObjectType	= "voto"
 	voto.Votante 	= Votante{
 		ObjectType: "votante",
-		ID:         votanteHash,
+		ID:         clientHash,
 	}
 
 	voto.Timestamp  = horarioTransacao.String()
 	voto.Candidato  = votacao.Candidatos[candidatoID]
 
-	votacao.Votos[votanteHash] = voto
+	votacao.Votos[clientHash] = voto
 
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 
