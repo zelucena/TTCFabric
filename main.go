@@ -53,7 +53,7 @@ func (a ByNumeroVotos) Less(i, j int) bool { return a[i].NumeroVotos > a[j].Nume
 func (a ByNumeroVotos) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 func (s *VotacaoContract) InitVotacao(APIstub shim.ChaincodeStubInterface) peer.Response {
-	var votacao, GetStateError = APIstub.getState("votacao")
+	var votacao, GetStateError = APIstub.GetState("votacao")
 
 	if GetStateError != nil {
 		return shim.Error(GetStateError.Error())
@@ -88,7 +88,7 @@ func (s *VotacaoContract) Init(APIstub shim.ChaincodeStubInterface) peer.Respons
 }
 
 func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votacao, error) {
-	var state, GetStateError = APIstub.getState("votacao")
+	var state, GetStateError = APIstub.GetState("votacao")
 
 	if GetStateError != nil {
 		return Votacao{}, GetStateError
