@@ -104,7 +104,7 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 	// Retrieve the requested Smart Contract function and arguments
-	function, args := APIstub.GetFunctionAndParameters()
+	//function, args := APIstub.GetFunctionAndParameters()
 
 	clientID, erroID := cid.GetID(APIstub)
 	clientMSPID, erroMSPID := cid.GetMSPID(APIstub)
@@ -137,7 +137,7 @@ return shim.success(clientHash)
 	}
 
 	return shim.Error("Funcao indisponivel.")
-	
+
 	 */
 }
 
