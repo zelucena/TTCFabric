@@ -104,7 +104,7 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 	// Retrieve the requested Smart Contract function and arguments
-	//function, args := APIstub.GetFunctionAndParameters()
+	function, args := APIstub.GetFunctionAndParameters()
 
 	clientID, erroID := cid.GetID(APIstub)
 	clientMSPID, erroMSPID := cid.GetMSPID(APIstub)
@@ -117,8 +117,7 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return shim.Error(erroID.Error())
 	}
 	clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
-return shim.Success([]byte(clientHash))
-	/*
+
 	// Route to the appropriate handler function to interact with the ledger
 	if function == "cadastrarVotacao" {
 		return s.cadastrarVotacao(APIstub, args)
@@ -137,8 +136,6 @@ return shim.Success([]byte(clientHash))
 	}
 
 	return shim.Error("Funcao indisponivel.")
-
-	 */
 }
 
 /**
