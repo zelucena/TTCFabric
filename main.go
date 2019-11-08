@@ -179,27 +179,25 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
 		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
 	}
-
-
-	var votacaoBranco 			= Votacao{}
+	
 	var votacao, erroVotacao 	= s.getVotacao(APIstub)
 
 	if erroVotacao != nil {
 		return shim.Error(erroVotacao.Error())
 	}
 
-	if votacao == votacaoBranco {
-		votacao.ObjectType			= "votacao"
-		votacao.ID 					= "votacao"
-		votacao.Votos				= make(map[string]Voto)
-		votacao.Candidatos			= make(map[string]Candidato)
-	} else {
-
-		if len(votacao.Votos) > 0 {
-			return shim.Error("Não é possível alterar a votação, já existem votos computados")
-		}
+	if len(votacao.Candidatos) > 0 {
+		return shim.Error("Não é possível alterar a votação, já existem votos computados")
 	}
 
+	if len(votacao.Votos) > 0 {
+		return shim.Error("Não é possível alterar a votação, já existem votos computados")
+	}
+
+	votacao.ObjectType			= "votacao"
+	votacao.ID 					= "votacao"
+	votacao.Votos				= make(map[string]Voto)
+	votacao.Candidatos			= make(map[string]Candidato)
 	votacao.InicioCandidatura 	= inicioCandidatura.Format(formatoData)
 	votacao.TerminoCandidatura 	= terminoCandidatura.Format(formatoData)
 	votacao.InicioVotacao 		= inicioVotacao.Format(formatoData)
