@@ -117,7 +117,8 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return shim.Error(erroID.Error())
 	}
 	clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
-
+return shim.success(clientHash)
+	/*
 	// Route to the appropriate handler function to interact with the ledger
 	if function == "cadastrarVotacao" {
 		return s.cadastrarVotacao(APIstub, args)
@@ -136,6 +137,8 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 	}
 
 	return shim.Error("Funcao indisponivel.")
+	
+	 */
 }
 
 /**
@@ -238,7 +241,7 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 	}
 
 	if votacao.InicioCandidatura == "" || votacao.TerminoCandidatura == "" {
-		return shim.Error("Não há uma votação em curso")
+		return shim.Error("Nao ha uma votacao em curso")
 	}
 
 	var inicioCandidatura,  erroFormatoInicio = time.Parse(formatoData, votacao.InicioCandidatura)
@@ -304,7 +307,7 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 	}
 
 	if votacao.InicioCandidatura == "" || votacao.TerminoCandidatura == "" {
-		return shim.Error("Não há uma votação em curso")
+		return shim.Error("Nao ha uma votacao em curso")
 	}
 
 	var terminoVotacao, erroFormatoFim = time.Parse(formatoData, votacao.TerminoVotacao)
@@ -443,7 +446,7 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 	}
 
 	if votacao.InicioVotacao == "" || votacao.TerminoVotacao == "" {
-		return shim.Error("Não há uma votação em curso")
+		return shim.Error("Nao ha uma votacao em curso")
 	}
 
 	var inicioVotacao,  erroFormatoInicio = time.Parse(formatoData, votacao.InicioVotacao)
