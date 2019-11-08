@@ -116,8 +116,8 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 	if erroMSPID != nil {
 		return shim.Error(erroID.Error())
 	}
-	clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
-return shim.Success(clientHash)
+	//clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
+return shim.Success(sha256.Sum256([]byte(clientMSPID + clientID)))
 	/*
 	// Route to the appropriate handler function to interact with the ledger
 	if function == "cadastrarVotacao" {
