@@ -60,24 +60,24 @@ func (s *VotacaoContract) InitVotacao(APIstub shim.ChaincodeStubInterface) peer.
 	}
 
 	if votacao == nil {
-		votacao := Votacao{
+		novaVotacao := Votacao{
 			ObjectType:        	"votacao",
 			ID:                	"votacao",
 			Candidatos:		   	make(map[string]Candidato),
 			Votos:				make(map[string]Voto),
 		}
-	}
 
-	var retornoJSON, erroJSON = json.Marshal(votacao)
+		var retornoJSON, erroJSON = json.Marshal(novaVotacao)
 
-	if erroJSON != nil {
-		return shim.Error(erroJSON.Error())
-	}
+		if erroJSON != nil {
+			return shim.Error(erroJSON.Error())
+		}
 
-	var putStateError = APIstub.PutState("votacao", retornoJSON)
+		var putStateError = APIstub.PutState("votacao", retornoJSON)
 
-	if putStateError != nil {
-		return shim.Error(putStateError.Error())
+		if putStateError != nil {
+			return shim.Error(putStateError.Error())
+		}
 	}
 
 	return shim.Success(nil)
