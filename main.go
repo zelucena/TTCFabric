@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/peer"
-	"github.com/hyperledger/fabric/tree/release-1.4/core/chaincode/lib/cid"
+	"github.com/hyperledger/fabric/core/chaincode/lib/cid"
 	"sort"
 	"time"
 )
