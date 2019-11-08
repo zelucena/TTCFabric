@@ -200,6 +200,8 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	} else {
 		votacao.ObjectType			= "votacao"
 		votacao.ID 					= "votacao"
+		votacao.Votos				= make(map[string]Voto)
+		votacao.Candidatos			= make(map[string]Candidato)
 	}
 
 	votacao.InicioCandidatura 	= inicioCandidatura.Format(formatoData)
@@ -233,6 +235,10 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 
 	if erroVotacao != nil {
 		return shim.Error(erroVotacao.Error())
+	}
+
+	if votacao.InicioCandidatura == "" || votacao.TerminoCandidatura == "" {
+		return shim.Error("Não há uma votação em curso")
 	}
 
 	var inicioCandidatura,  erroFormatoInicio = time.Parse(formatoData, votacao.InicioCandidatura)
@@ -295,6 +301,10 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 	var votacao, erro = s.getVotacao(APIstub)
 	if erro != nil {
 		return shim.Error(erro.Error())
+	}
+
+	if votacao.InicioCandidatura == "" || votacao.TerminoCandidatura == "" {
+		return shim.Error("Não há uma votação em curso")
 	}
 
 	var terminoVotacao, erroFormatoFim = time.Parse(formatoData, votacao.TerminoVotacao)
@@ -430,6 +440,10 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 
 	if erroVotacao != nil {
 		return shim.Error(erroVotacao.Error())
+	}
+
+	if votacao.InicioVotacao == "" || votacao.TerminoVotacao == "" {
+		return shim.Error("Não há uma votação em curso")
 	}
 
 	var inicioVotacao,  erroFormatoInicio = time.Parse(formatoData, votacao.InicioVotacao)
