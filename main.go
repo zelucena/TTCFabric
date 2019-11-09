@@ -180,6 +180,8 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
 	}
 
+	return shim.Success([]byte("validado"))
+	/*
 	var votacao, erroVotacao 	= s.getVotacao(APIstub)
 
 	if erroVotacao != nil {
@@ -191,7 +193,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(erroJSON.Error())
 	}
 	return shim.Success(votacaoAsBytes)
-	/*
+
 	if len(votacao.Candidatos) > 0 {
 		return shim.Error("Não é possível alterar a votação, já existem votos computados")
 	}
@@ -222,7 +224,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	return shim.Success(nil)
-	*/
+ */
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
