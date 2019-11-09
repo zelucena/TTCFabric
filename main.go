@@ -114,7 +114,7 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 	}
 
 	if erroMSPID != nil {
-		return shim.Error(erroID.Error())
+		return shim.Error(erroMSPID.Error())
 	}
 	clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
 
@@ -179,7 +179,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
 		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
 	}
-	
+
 	var votacao, erroVotacao 	= s.getVotacao(APIstub)
 
 	if erroVotacao != nil {
@@ -208,7 +208,9 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if erroJSON != nil {
 		return shim.Error(erroJSON.Error())
 	}
+	return shim.Success(votacaoAsBytes)
 
+	/*
 	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
 
 	if putStateError != nil {
@@ -216,6 +218,8 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	return shim.Success(nil)
+
+	 */
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
