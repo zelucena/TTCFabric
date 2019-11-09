@@ -181,7 +181,12 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	var votacao, erroVotacao 	= s.getVotacao(APIstub)
-
+	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
+	return shim.Success(votacaoAsBytes)
+	/*
 	if erroVotacao != nil {
 		return shim.Error(erroVotacao.Error())
 	}
@@ -208,9 +213,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if erroJSON != nil {
 		return shim.Error(erroJSON.Error())
 	}
-	return shim.Success(votacaoAsBytes)
 
-	/*
 	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
 
 	if putStateError != nil {
@@ -218,8 +221,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	return shim.Success(nil)
-
-	 */
+	*/
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
