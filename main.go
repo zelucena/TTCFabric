@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	//"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -116,10 +117,12 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 	if erroMSPID != nil {
 		return shim.Error(erroMSPID.Error())
 	}
-	return shim.Success([]byte("clienteID: "+ clientID + " MSPID: " + clientMSPID))
-	/*
-	clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
 
+
+	clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
+	return shim.Success([]byte("Hash: "+clientHash))
+
+	/*
 	// Route to the appropriate handler function to interact with the ledger
 	if function == "cadastrarVotacao" {
 		return s.cadastrarVotacao(APIstub, args)
