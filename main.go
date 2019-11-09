@@ -104,7 +104,7 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 	// Retrieve the requested Smart Contract function and arguments
-	function, args := APIstub.GetFunctionAndParameters()
+	//function, args := APIstub.GetFunctionAndParameters()
 
 	clientID, erroID := cid.GetID(APIstub)
 	clientMSPID, erroMSPID := cid.GetMSPID(APIstub)
@@ -116,6 +116,8 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 	if erroMSPID != nil {
 		return shim.Error(erroMSPID.Error())
 	}
+	return shim.Success([]byte("clienteID: "+ clientID + " MSPID: " + clientMSPID))
+	/*
 	clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
 
 	// Route to the appropriate handler function to interact with the ledger
@@ -136,6 +138,8 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 	}
 
 	return shim.Error("Funcao indisponivel.")
+
+	 */
 }
 
 /**
@@ -180,19 +184,11 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
 	}
 
-	return shim.Success([]byte("validado"))
-	/*
 	var votacao, erroVotacao 	= s.getVotacao(APIstub)
 
 	if erroVotacao != nil {
 		return shim.Error(erroVotacao.Error())
 	}
-
-	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
-	if erroJSON != nil {
-		return shim.Error(erroJSON.Error())
-	}
-	return shim.Success(votacaoAsBytes)
 
 	if len(votacao.Candidatos) > 0 {
 		return shim.Error("Não é possível alterar a votação, já existem votos computados")
@@ -224,7 +220,6 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	return shim.Success(nil)
- */
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
@@ -306,7 +301,7 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 		return shim.Error(erro.Error())
 	}
 
-	if votacao.InicioCandidatura == "" || votacao.TerminoCandidatura == "" {
+	if votacao.InicioVotacao == "" || votacao.TerminoVotacao == "" {
 		return shim.Error("Nao ha uma votacao em curso")
 	}
 
