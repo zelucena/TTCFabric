@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crypto/sha256"
+	//"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
