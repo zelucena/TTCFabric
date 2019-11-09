@@ -181,16 +181,17 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	var votacao, erroVotacao 	= s.getVotacao(APIstub)
+
+	if erroVotacao != nil {
+		return shim.Error(erroVotacao.Error())
+	}
+
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 	if erroJSON != nil {
 		return shim.Error(erroJSON.Error())
 	}
 	return shim.Success(votacaoAsBytes)
 	/*
-	if erroVotacao != nil {
-		return shim.Error(erroVotacao.Error())
-	}
-
 	if len(votacao.Candidatos) > 0 {
 		return shim.Error("Não é possível alterar a votação, já existem votos computados")
 	}
