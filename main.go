@@ -176,7 +176,8 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		Candidatos:         nil,
 		Votos:              nil,
 	}
-
+	return shim.Success([]byte(votacao.ID))
+	/*
 	//votacao.Votos				= make(map[string]Voto)
 	//votacao.Candidatos		= make(map[string]Candidato)
 
@@ -185,7 +186,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if erroJSON != nil {
 		return shim.Error(erroJSON.Error())
 	}
-	return shim.Success(votacaoAsBytes)
+
 	/*
 	var putStateError = APIstub.PutState("votacao", votacaoAsBytes)
 
