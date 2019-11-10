@@ -116,7 +116,7 @@ O objeto de votação pode ser editado contanto que não haja votos
  */
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	//definir formato de entrada
-	formatoData := "2006-01-02 15:04:05"
+	//formatoData := "2006-01-02 15:04:05"
 
 	//validar parâmetros de entrada
 	if len(args) != 4 {
