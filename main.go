@@ -164,11 +164,11 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	if len(votacao.Candidatos) > 0 {
-		return shim.Error("Não é possível alterar a votação, já existem votos computados")
+		return shim.Error("Não e possível alterar a votação, ja existem candidatos computados")
 	}
 
 	if len(votacao.Votos) > 0 {
-		return shim.Error("Não é possível alterar a votação, já existem votos computados")
+		return shim.Error("Não é possível alterar a votacao, já existem votos computados")
 	}
 
 
@@ -232,7 +232,7 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 		return shim.Error(erroFormatoInicio.Error())
 	}
 
-	var terminoCandidatura, erroFormatoFim = time.Parse(ISO_DATE, votacao.TerminoCandidatura)
+	var terminoCandidatura, erroFormatoFim = time.Parse(ISO_DATE, votacao.TerminoVotacao)
 
 	if erroFormatoFim != nil {
 		return shim.Error(erroFormatoFim.Error())
@@ -300,7 +300,7 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 
 	var dataAtual = time.Now()
 	if terminoVotacao.After(dataAtual) {
-		return shim.Error("O periodo de votacao ainda não encerrou")
+		//return shim.Error("O periodo de votacao encerra em "+dataAtual.Format(BR_DATE))
 	}
 
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
@@ -327,7 +327,7 @@ func (s *VotacaoContract) visualizarVotos(APIstub shim.ChaincodeStubInterface, a
 
 	var dataAtual = time.Now()
 	if terminoVotacao.After(dataAtual) {
-		return shim.Error("O período de votação ainda não encerrou")
+		return shim.Error("O período de votação ainda nao encerrou")
 	}
 
 	var votosAsBytes, erroJSON = json.Marshal(votacao.Votos)
@@ -354,7 +354,7 @@ func (s *VotacaoContract) divulgarResultados(APIstub shim.ChaincodeStubInterface
 
 	var dataAtual = time.Now()
 	if terminoVotacao.After(dataAtual) {
-		return shim.Error("O periodo de votacao ainda não encerrou")
+		return shim.Error("O periodo de votacao ainda nao encerrou")
 	}
 
 	candidatos := make(map[string]*Candidato)
@@ -444,11 +444,11 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 	}
 
 	if inicioVotacao.After(dataAtual) {
-		return shim.Error("O periodo de candidaturas ainda não comecou")
+		return shim.Error("O periodo de candidaturas comeca em "+inicioVotacao.Format(BR_DATE))
 	}
 
 	if terminoVotacao.Before(dataAtual) {
-		return shim.Error("O periodo de candidaturas ja terminou")
+		return shim.Error("O periodo de candidaturas encerrou em "+terminoVotacao.Format(BR_DATE))
 	}
 
 	if len(args) != 1 {
@@ -462,7 +462,7 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 
 	var candidatoBranco = Candidato{}
 	if votacao.Candidatos[candidatoID] == candidatoBranco {
-		return shim.Error("Candidato inválido")
+		return shim.Error("Candidato invalido")
 	}
 
 	var horarioTransacao, erroTimestamp = APIstub.GetTxTimestamp()
