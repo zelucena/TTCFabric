@@ -11,6 +11,10 @@ import (
 	"time"
 )
 
+const (
+	ISO_DATE = "2006-01-02 15:04:05"
+	BR_DATE  = "02/01/2016 15:04:05"
+)
 
 type Candidato struct {
 	ObjectType	string  `json:"doctype"`
@@ -207,7 +211,6 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	formatoData := "2006-01-02 15:04:05"
 	var dataAtual = time.Now()
 	if len(args) != 3 {
 		return shim.Error("Esperado: ID, nome, email")
@@ -223,24 +226,24 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 		return shim.Error("Nao ha uma votacao em curso")
 	}
 
-	var inicioCandidatura,  erroFormatoInicio = time.Parse(formatoData, votacao.InicioCandidatura)
+	var inicioCandidatura,  erroFormatoInicio = time.Parse(ISO_DATE, votacao.InicioCandidatura)
 
 	if erroFormatoInicio != nil {
 		return shim.Error(erroFormatoInicio.Error())
 	}
 
-	var terminoCandidatura, erroFormatoFim = time.Parse(formatoData, votacao.InicioCandidatura)
+	var terminoCandidatura, erroFormatoFim = time.Parse(ISO_DATE, votacao.TerminoCandidatura)
 
 	if erroFormatoFim != nil {
 		return shim.Error(erroFormatoFim.Error())
 	}
 
 	if inicioCandidatura.After(dataAtual) {
-		return shim.Error("O periodo de candidaturas ainda não comecou")
+		return shim.Error("O periodo de candidaturas ira comecar em " + dataAtual.Format(BR_DATE))
 	}
 
 	if terminoCandidatura.Before(dataAtual) {
-		return shim.Error("O periodo de candidaturas ja terminou")
+		return shim.Error("O periodo de candidaturas ja terminou em " + dataAtual.Format(BR_DATE))
 	}
 
 	var candidato = Candidato{
