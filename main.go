@@ -144,14 +144,16 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(erro4.Error())
 	}
 
-	if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
-		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
-	}
 
-	if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
-		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
-	}
-return shim.Success(nil)
+	//if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
+	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	//}
+	//
+	//if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
+	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	//}
+return shim.Success([]byte(inicioCandidatura.Format(formatoData) + " "+
+	terminoCandidatura.Format(formatoData) +"  "+inicioVotacao.Format(formatoData)+"   "+terminoVotacao.Format(formatoData)))
 	//var votacao, erroVotacao	= s.getVotacao(APIstub)
 
 	//if erroVotacao != nil {
