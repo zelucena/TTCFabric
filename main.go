@@ -95,8 +95,8 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 		return Votacao{}, GetStateError
 	}
 
-	if state == nil {
-		var unmarshalErro= json.Unmarshal(state, &votacao)
+	if state != nil {
+		var unmarshalErro = json.Unmarshal(state, &votacao)
 		if unmarshalErro != nil {
 			return Votacao{}, unmarshalErro
 		}
@@ -148,17 +148,17 @@ O objeto de votação pode ser editado contanto que não haja votos
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	//definir formato de entrada
 	formatoData := "2006-01-02 15:04:05"
-	fmt.Println("Esperando parametros")
+
 	//validar parâmetros de entrada
 	if len(args) != 4 {
 		return shim.Error("Parâmetros esperados: inicio candidatura, termino candidatura, inicio votacao, termino votacao")
 	}
-fmt.Println("parametros recebidos")
+
 	var inicioCandidatura, 	erro1 = time.Parse(formatoData, args[1])
 	var terminoCandidatura, erro2 = time.Parse(formatoData, args[2])
 	var inicioVotacao, 		erro3 = time.Parse(formatoData, args[3])
 	var terminoVotacao, 	erro4 = time.Parse(formatoData, args[4])
-	fmt.Println("Parse dates")
+
 	if erro1 != nil {
 		return shim.Error(erro1.Error())
 	}
@@ -174,29 +174,29 @@ fmt.Println("parametros recebidos")
 	if erro4 != nil {
 		return shim.Error(erro4.Error())
 	}
-	fmt.Println("Validados erros data")
-	if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
-		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
-	}
 
-	if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
-		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
-	}
-	fmt.Println("Teste de datas")
+	//if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
+	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	//}
+	//
+	//if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
+	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	//}
+
 	var votacao, erroVotacao	= s.getVotacao(APIstub)
 
 	if erroVotacao != nil {
 		return shim.Error(erroVotacao.Error())
 	}
-	fmt.Println("get votacao")
-	if len(votacao.Candidatos) > 0 {
-		return shim.Error("Não é possível alterar a votação, já existem votos computados")
-	}
 
-	if len(votacao.Votos) > 0 {
-		return shim.Error("Não é possível alterar a votação, já existem votos computados")
-	}
-	fmt.Println("verificando votacao vazia")
+	//if len(votacao.Candidatos) > 0 {
+	//	return shim.Error("Não é possível alterar a votação, já existem votos computados")
+	//}
+	//
+	//if len(votacao.Votos) > 0 {
+	//	return shim.Error("Não é possível alterar a votação, já existem votos computados")
+	//}
+	//
 	votacao.ObjectType			= "votacao"
 	votacao.ID 					= "votacao"
 	votacao.Votos				= make(map[string]Voto)
@@ -205,19 +205,18 @@ fmt.Println("parametros recebidos")
 	votacao.TerminoCandidatura 	= terminoCandidatura.Format(formatoData)
 	votacao.InicioVotacao 		= inicioVotacao.Format(formatoData)
 	votacao.TerminoVotacao 		= terminoVotacao.Format(formatoData)
-	fmt.Println("inicializando votacao")
+
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 
 	if erroJSON != nil {
 		return shim.Error(erroJSON.Error())
 	}
-	fmt.Println("votacao parse json")
 	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
 
 	if putStateError != nil {
 		return shim.Error(putStateError.Error())
 	}
-	fmt.Println("put sate votacao")
+
 	return shim.Success(nil)
 }
 
