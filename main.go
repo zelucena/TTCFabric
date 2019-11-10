@@ -154,14 +154,14 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(erroJSON.Error())
 	}
 
-	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
+	var putStateError = APIstub.PutState("votacao", votacaoAsBytes)
 
 	if putStateError != nil {
 		return shim.Error(putStateError.Error())
 	}
 
 	return shim.Success(nil)
-	
+
 	/*
 	//definir formato de entrada
 	formatoData := "2006-01-02 15:04:05"
