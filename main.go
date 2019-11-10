@@ -77,6 +77,21 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 	return votacao, nil
 }
 
+func (s *VotacaoContract) getClientInfo(APIstub shim.ChaincodeStubInterface) peer.Response{
+	clientID, erroID := cid.GetID(APIstub)
+	clientMSPID, erroMSPID := cid.GetMSPID(APIstub)
+
+	if erroID != nil {
+		return shim.Error(erroID.Error())
+	}
+
+	if erroMSPID != nil {
+		return shim.Error(erroMSPID.Error())
+	}
+
+	return shim.Success([]byte("Client ID: "+clientID+" Client MSPID: "+clientMSPID))
+}
+
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 	// Extrair função e parâmetros chamados
 	function, args := APIstub.GetFunctionAndParameters()
@@ -109,6 +124,8 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return s.visualizarVoto(APIstub, args, clientHash)
 	} else if function == "divulgarResultados" {
 		return s.divulgarResultados(APIstub, args)
+	} else if function == "getClientInfo" {
+		return s.getClientInfo(APIstub)
 	}
 
 	return shim.Error("Funcao indisponivel.")
@@ -256,15 +273,15 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 
 	for _, v := range votacao.Candidatos {
 		if v.ID == candidato.ID {
-			return shim.Error("ID já inserido")
+			return shim.Error("ID ja cadastrado")
 		}
 
 		if v.Email == candidato.Email {
-			return shim.Error("Email já inserido")
+			return shim.Error("Email ja cadastrado")
 		}
 	}
 
-	votacao.Candidatos["id"] = candidato
+	votacao.Candidatos[candidato.ID] = candidato
 
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 
