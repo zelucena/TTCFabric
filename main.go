@@ -153,20 +153,20 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
 	//}
 	//
-	//var votacao, erroVotacao	= s.getVotacao(APIstub)
-	//
-	//if erroVotacao != nil {
-	//	return shim.Error(erroVotacao.Error())
-	//}
+	var votacao, erroVotacao	= s.getVotacao(APIstub)
 
-	//if len(votacao.Candidatos) > 0 {
-	//	return shim.Error("Não é possível alterar a votação, já existem votos computados")
-	//}
-	//
-	//if len(votacao.Votos) > 0 {
-	//	return shim.Error("Não é possível alterar a votação, já existem votos computados")
-	//}
-	//
+	if erroVotacao != nil {
+		return shim.Error(erroVotacao.Error())
+	}
+
+	if len(votacao.Candidatos) > 0 {
+		return shim.Error("Não é possível alterar a votação, já existem votos computados")
+	}
+
+	if len(votacao.Votos) > 0 {
+		return shim.Error("Não é possível alterar a votação, já existem votos computados")
+	}
+
 
 
 	//var votacao = Votacao{
@@ -180,19 +180,16 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	//	Votos:              nil,
 	//}
 
-	var votacao = Votacao{
+	votacao = Votacao{
 		ObjectType:         "votacao",
 		ID:                 "votacao",
 		InicioCandidatura:  args[0],
 		TerminoCandidatura: args[1],
 		InicioVotacao:      args[2],
 		TerminoVotacao:     args[3],
-		Candidatos:         nil,
-		Votos:              nil,
+		Candidatos:         make(map[string]Candidato),
+		Votos:              make(map[string]Voto),
 	}
-
-	//votacao.Votos				= make(map[string]Voto)
-	//votacao.Candidatos		= make(map[string]Candidato)
 
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 
