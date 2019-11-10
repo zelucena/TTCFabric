@@ -146,6 +146,23 @@ Vamos assumir a existência de apenas uma votação por canal, portanto dentro d
 O objeto de votação pode ser editado contanto que não haja votos
  */
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	var votacao = Votacao{}
+
+	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
+
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
+
+	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
+
+	if putStateError != nil {
+		return shim.Error(putStateError.Error())
+	}
+
+	return shim.Success(nil)
+	
+	/*
 	//definir formato de entrada
 	formatoData := "2006-01-02 15:04:05"
 
@@ -219,6 +236,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	return shim.Success(nil)
+	*/
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
