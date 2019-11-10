@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/sha256"
-	//"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
@@ -145,21 +144,6 @@ Vamos assumir a existência de apenas uma votação por canal, portanto dentro d
 O objeto de votação pode ser editado contanto que não haja votos
  */
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var votacao, erroVotacao 	= s.getVotacao(APIstub)
-
-	if erroVotacao != nil {
-		return shim.Error(erroVotacao.Error())
-	}
-
-	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
-
-	if erroJSON != nil {
-		return shim.Error(erroJSON.Error())
-	}
-
-	return shim.Success(votacaoAsBytes)
-
-	/*
 	//definir formato de entrada
 	formatoData := "2006-01-02 15:04:05"
 
@@ -210,7 +194,8 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if len(votacao.Votos) > 0 {
 		return shim.Error("Não é possível alterar a votação, já existem votos computados")
 	}
-
+	return shim.Error("validacoes")
+	/*
 	votacao.ObjectType			= "votacao"
 	votacao.ID 					= "votacao"
 	votacao.Votos				= make(map[string]Voto)
