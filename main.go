@@ -180,7 +180,7 @@ var votacao = Votacao{}
 	if erroJSON != nil {
 		return shim.Error(erroJSON.Error())
 	}
-	var putStateError = APIstub.PutState(votacao.ID, votacaoAsBytes)
+	var putStateError = APIstub.PutState("votacao", votacaoAsBytes)
 
 	if putStateError != nil {
 		return shim.Error(putStateError.Error())
