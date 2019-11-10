@@ -52,39 +52,8 @@ func (a ByNumeroVotos) Len() int           { return len(a) }
 func (a ByNumeroVotos) Less(i, j int) bool { return a[i].NumeroVotos > a[j].NumeroVotos }
 func (a ByNumeroVotos) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
-func (s *VotacaoContract) InitVotacao(APIstub shim.ChaincodeStubInterface) peer.Response {
-	var votacao, GetStateError = APIstub.GetState("votacao")
-
-	if GetStateError != nil {
-		return shim.Error(GetStateError.Error())
-	}
-
-	if votacao == nil {
-		novaVotacao := Votacao{
-			ObjectType:        	"votacao",
-			ID:                	"votacao",
-			Candidatos:		   	make(map[string]Candidato),
-			Votos:				make(map[string]Voto),
-		}
-
-		var retornoJSON, erroJSON = json.Marshal(novaVotacao)
-
-		if erroJSON != nil {
-			return shim.Error(erroJSON.Error())
-		}
-
-		var putStateError = APIstub.PutState("votacao", retornoJSON)
-
-		if putStateError != nil {
-			return shim.Error(putStateError.Error())
-		}
-	}
-
-	return shim.Success(nil)
-}
-
 func (s *VotacaoContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
-	return s.InitVotacao(APIstub)
+	return shim.Success(nil)
 }
 
 func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votacao, error) {
@@ -199,8 +168,8 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	//
 	votacao.ObjectType			= "votacao"
 	votacao.ID 					= "votacao"
-	votacao.Votos				= make(map[string]Voto)
-	votacao.Candidatos			= make(map[string]Candidato)
+	//votacao.Votos				= make(map[string]Voto)
+	//votacao.Candidatos			= make(map[string]Candidato)
 	votacao.InicioCandidatura 	= inicioCandidatura.Format(formatoData)
 	votacao.TerminoCandidatura 	= terminoCandidatura.Format(formatoData)
 	votacao.InicioVotacao 		= inicioVotacao.Format(formatoData)
