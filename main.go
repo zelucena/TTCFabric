@@ -232,7 +232,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(putStateError.Error())
 	}
 
-	return shim.Success(nil)
+	return shim.Success(nil) */
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
@@ -304,7 +304,7 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 		return shim.Error(putStateError.Error())
 	}
 
-	return shim.Success(nil) */
+	return shim.Success(nil)
 }
 
 func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
