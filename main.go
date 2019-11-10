@@ -123,26 +123,26 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error("Parâmetros esperados: inicio candidatura, termino candidatura, inicio votacao, termino votacao")
 	}
 
-	var inicioCandidatura, 	erro1 = time.Parse(formatoData, args[1])
-	var terminoCandidatura, erro2 = time.Parse(formatoData, args[2])
-	var inicioVotacao, 		erro3 = time.Parse(formatoData, args[3])
-	var terminoVotacao, 	erro4 = time.Parse(formatoData, args[4])
+	//var inicioCandidatura, 	erro1 = time.Parse(formatoData, args[1])
+	//var terminoCandidatura, erro2 = time.Parse(formatoData, args[2])
+	//var inicioVotacao, 		erro3 = time.Parse(formatoData, args[3])
+	//var terminoVotacao, 	erro4 = time.Parse(formatoData, args[4])
 
-	if erro1 != nil {
-		return shim.Error(erro1.Error())
-	}
-
-	if erro2 != nil {
-		return shim.Error(erro2.Error())
-	}
-
-	if erro3 != nil {
-		return shim.Error(erro3.Error())
-	}
-
-	if erro4 != nil {
-		return shim.Error(erro4.Error())
-	}
+	//if erro1 != nil {
+	//	return shim.Error(erro1.Error())
+	//}
+	//
+	//if erro2 != nil {
+	//	return shim.Error(erro2.Error())
+	//}
+	//
+	//if erro3 != nil {
+	//	return shim.Error(erro3.Error())
+	//}
+	//
+	//if erro4 != nil {
+	//	return shim.Error(erro4.Error())
+	//}
 
 
 	//if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
@@ -152,10 +152,9 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	//if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
 	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
 	//}
-return shim.Success([]byte(inicioCandidatura.Format(formatoData) + " "+
-	terminoCandidatura.Format(formatoData) +"  "+inicioVotacao.Format(formatoData)+"   "+terminoVotacao.Format(formatoData)))
+	//
 	//var votacao, erroVotacao	= s.getVotacao(APIstub)
-
+	//
 	//if erroVotacao != nil {
 	//	return shim.Error(erroVotacao.Error())
 	//}
@@ -169,18 +168,28 @@ return shim.Success([]byte(inicioCandidatura.Format(formatoData) + " "+
 	//}
 	//
 
-	/*
+
+	//var votacao = Votacao{
+	//	ObjectType:         "votacao",
+	//	ID:                 "votacao",
+	//	InicioCandidatura:  inicioCandidatura.Format(formatoData),
+	//	TerminoCandidatura: terminoCandidatura.Format(formatoData),
+	//	InicioVotacao:      inicioVotacao.Format(formatoData),
+	//	TerminoVotacao:     terminoVotacao.Format(formatoData),
+	//	Candidatos:         nil,
+	//	Votos:              nil,
+	//}
+
 	var votacao = Votacao{
 		ObjectType:         "votacao",
 		ID:                 "votacao",
-		InicioCandidatura:  inicioCandidatura.Format(formatoData),
-		TerminoCandidatura: terminoCandidatura.Format(formatoData),
-		InicioVotacao:      inicioVotacao.Format(formatoData),
-		TerminoVotacao:     terminoVotacao.Format(formatoData),
+		InicioCandidatura:  args[0],
+		TerminoCandidatura: args[1],
+		InicioVotacao:      args[2],
+		TerminoVotacao:     args[3],
 		Candidatos:         nil,
 		Votos:              nil,
 	}
-
 
 	//votacao.Votos				= make(map[string]Voto)
 	//votacao.Candidatos		= make(map[string]Candidato)
@@ -191,7 +200,6 @@ return shim.Success([]byte(inicioCandidatura.Format(formatoData) + " "+
 		return shim.Error(erroJSON.Error())
 	}
 
-	/*
 	var putStateError = APIstub.PutState("votacao", votacaoAsBytes)
 
 	if putStateError != nil {
@@ -199,8 +207,6 @@ return shim.Success([]byte(inicioCandidatura.Format(formatoData) + " "+
 	}
 
 	return shim.Success(nil)
-
-	 */
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
