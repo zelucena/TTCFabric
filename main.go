@@ -173,13 +173,13 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(erro4.Error())
 	}
 
-	if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
-		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
-	}
-
-	if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
-		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
-	}
+	//if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
+	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	//}
+	//
+	//if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
+	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	//}
 
 	var votacao, erroVotacao 	= s.getVotacao(APIstub)
 
@@ -187,13 +187,13 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(erroVotacao.Error())
 	}
 
-	//if len(votacao.Candidatos) > 0 {
-	//	return shim.Error("Não é possível alterar a votação, já existem votos computados")
-	//}
-	//
-	//if len(votacao.Votos) > 0 {
-	//	return shim.Error("Não é possível alterar a votação, já existem votos computados")
-	//}
+	if len(votacao.Candidatos) > 0 {
+		return shim.Error("Não é possível alterar a votação, já existem votos computados")
+	}
+
+	if len(votacao.Votos) > 0 {
+		return shim.Error("Não é possível alterar a votação, já existem votos computados")
+	}
 
 	votacao.ObjectType			= "votacao"
 	votacao.ID 					= "votacao"
