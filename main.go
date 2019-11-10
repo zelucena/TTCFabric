@@ -104,8 +104,8 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 }
 
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
-	// Retrieve the requested Smart Contract function and arguments
-	//function, args := APIstub.GetFunctionAndParameters()
+	// Extrair função e parâmetros chamados
+	function, args := APIstub.GetFunctionAndParameters()
 
 	clientID, erroID := cid.GetID(APIstub)
 	clientMSPID, erroMSPID := cid.GetMSPID(APIstub)
@@ -118,12 +118,9 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return shim.Error(erroMSPID.Error())
 	}
 
-
 	clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
-	return shim.Success([]byte("Hash: "+clientHash))
 
-	/*
-	// Route to the appropriate handler function to interact with the ledger
+	// invoca a função apropriada
 	if function == "cadastrarVotacao" {
 		return s.cadastrarVotacao(APIstub, args)
 	} else if function == "visualizarVotacao" {
@@ -141,8 +138,6 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 	}
 
 	return shim.Error("Funcao indisponivel.")
-
-	 */
 }
 
 /**
@@ -150,6 +145,21 @@ Vamos assumir a existência de apenas uma votação por canal, portanto dentro d
 O objeto de votação pode ser editado contanto que não haja votos
  */
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+	var votacao, erroVotacao 	= s.getVotacao(APIstub)
+
+	if erroVotacao != nil {
+		return shim.Error(erroVotacao.Error())
+	}
+
+	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
+
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
+
+	return shim.Success(votacaoAsBytes)
+
+	/*
 	//definir formato de entrada
 	formatoData := "2006-01-02 15:04:05"
 
@@ -294,7 +304,7 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 		return shim.Error(putStateError.Error())
 	}
 
-	return shim.Success(nil)
+	return shim.Success(nil) */
 }
 
 func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
