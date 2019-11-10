@@ -88,16 +88,18 @@ func (s *VotacaoContract) Init(APIstub shim.ChaincodeStubInterface) peer.Respons
 }
 
 func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votacao, error) {
+	var votacao = Votacao{}
 	var state, GetStateError = APIstub.GetState("votacao")
 
 	if GetStateError != nil {
 		return Votacao{}, GetStateError
 	}
 
-	var votacao = Votacao{}
-	var unmarshalErro = json.Unmarshal(state, &votacao)
-	if unmarshalErro != nil {
-		return Votacao{}, unmarshalErro
+	if state == nil {
+		var unmarshalErro= json.Unmarshal(state, &votacao)
+		if unmarshalErro != nil {
+			return Votacao{}, unmarshalErro
+		}
 	}
 	return votacao, nil
 }
@@ -173,13 +175,13 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(erro4.Error())
 	}
 
-	//if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
-	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
-	//}
-	//
-	//if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
-	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
-	//}
+	if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
+		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	}
+
+	if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
+		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	}
 
 	var votacao, erroVotacao	= s.getVotacao(APIstub)
 
@@ -197,15 +199,12 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 
 	votacao.ObjectType			= "votacao"
 	votacao.ID 					= "votacao"
-	//votacao.Votos				= make(map[string]Voto)
-	//votacao.Candidatos			= make(map[string]Candidato)
+	votacao.Votos				= make(map[string]Voto)
+	votacao.Candidatos			= make(map[string]Candidato)
 	votacao.InicioCandidatura 	= inicioCandidatura.Format(formatoData)
 	votacao.TerminoCandidatura 	= terminoCandidatura.Format(formatoData)
 	votacao.InicioVotacao 		= inicioVotacao.Format(formatoData)
 	votacao.TerminoVotacao 		= terminoVotacao.Format(formatoData)
-
-	votacao.Votos				= nil
-	votacao.Candidatos			= nil
 
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 
