@@ -151,7 +151,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
 		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
 	}
-shim.Success(nil)
+return shim.Success(nil)
 	//var votacao, erroVotacao	= s.getVotacao(APIstub)
 
 	//if erroVotacao != nil {
