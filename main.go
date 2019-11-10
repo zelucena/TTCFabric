@@ -4,9 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"github.com/hyperledger/fabric/core/chaincode/lib/cid"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/peer"
-	"github.com/hyperledger/fabric/core/chaincode/lib/cid"
 	"sort"
 	"time"
 )
@@ -185,6 +185,8 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if erroJSON != nil {
 		return shim.Error(erroJSON.Error())
 	}
+	return shim.Success(votacaoAsBytes)
+	/*
 	var putStateError = APIstub.PutState("votacao", votacaoAsBytes)
 
 	if putStateError != nil {
@@ -192,6 +194,8 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	return shim.Success(nil)
+
+	 */
 }
 
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
