@@ -181,7 +181,7 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
 	//}
 
-	var votacao, erroVotacao 	= s.getVotacao(APIstub)
+	var votacao, erroVotacao	= s.getVotacao(APIstub)
 
 	if erroVotacao != nil {
 		return shim.Error(erroVotacao.Error())
@@ -197,12 +197,15 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 
 	votacao.ObjectType			= "votacao"
 	votacao.ID 					= "votacao"
-	votacao.Votos				= make(map[string]Voto)
-	votacao.Candidatos			= make(map[string]Candidato)
+	//votacao.Votos				= make(map[string]Voto)
+	//votacao.Candidatos			= make(map[string]Candidato)
 	votacao.InicioCandidatura 	= inicioCandidatura.Format(formatoData)
 	votacao.TerminoCandidatura 	= terminoCandidatura.Format(formatoData)
 	votacao.InicioVotacao 		= inicioVotacao.Format(formatoData)
 	votacao.TerminoVotacao 		= terminoVotacao.Format(formatoData)
+
+	votacao.Votos				= nil
+	votacao.Candidatos			= nil
 
 	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 
