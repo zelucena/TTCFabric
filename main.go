@@ -13,7 +13,7 @@ import (
 
 const (
 	ISO_DATE = "2006-01-02 15:04:05"
-	BR_DATE  = "02/01/2016 15:04:05"
+	BR_DATE  = "02/01/2006 15:04:05"
 )
 
 type Candidato struct {
