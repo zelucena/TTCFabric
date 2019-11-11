@@ -133,36 +133,36 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error("Parâmetros esperados: inicio candidatura, termino candidatura, inicio votacao, termino votacao")
 	}
 
-	//var inicioCandidatura, 	erro1 = time.Parse(formatoData, args[1])
-	//var terminoCandidatura, erro2 = time.Parse(formatoData, args[2])
-	//var inicioVotacao, 		erro3 = time.Parse(formatoData, args[3])
-	//var terminoVotacao, 	erro4 = time.Parse(formatoData, args[4])
+	var inicioCandidatura, 	erro1 = time.Parse(BR_DATE, args[0])
+	var terminoCandidatura, erro2 = time.Parse(BR_DATE, args[1])
+	var inicioVotacao, 		erro3 = time.Parse(BR_DATE, args[2])
+	var terminoVotacao, 	erro4 = time.Parse(BR_DATE, args[3])
 
-	//if erro1 != nil {
-	//	return shim.Error(erro1.Error())
-	//}
-	//
-	//if erro2 != nil {
-	//	return shim.Error(erro2.Error())
-	//}
-	//
-	//if erro3 != nil {
-	//	return shim.Error(erro3.Error())
-	//}
-	//
-	//if erro4 != nil {
-	//	return shim.Error(erro4.Error())
-	//}
+	if erro1 != nil {
+		return shim.Error(erro1.Error())
+	}
+
+	if erro2 != nil {
+		return shim.Error(erro2.Error())
+	}
+
+	if erro3 != nil {
+		return shim.Error(erro3.Error())
+	}
+
+	if erro4 != nil {
+		return shim.Error(erro4.Error())
+	}
 
 
-	//if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
-	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
-	//}
-	//
-	//if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
-	//	return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
-	//}
-	//
+	if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
+		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	}
+
+	if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
+		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+	}
+
 	var votacao, erroVotacao	= s.getVotacao(APIstub)
 
 	if erroVotacao != nil {
