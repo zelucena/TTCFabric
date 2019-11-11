@@ -78,23 +78,7 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 }
 
 func (s *VotacaoContract) getClientInfo(APIstub shim.ChaincodeStubInterface) peer.Response{
-	var clientIdentity, erroCid = cid.New(APIstub)
-
-	if erroCid != nil {
-		return shim.Error(erroCid.Error())
-	}
-
-	clientID, erroID := clientIdentity.GetID()
-	clientMSPID, erroMSPID := clientIdentity.GetMSPID()
-
-	if erroID != nil {
-		return shim.Error(erroID.Error())
-	}
-
-	if erroMSPID != nil {
-		return shim.Error(erroMSPID.Error())
-	}
-	return shim.Success([]byte("clientID: "+clientID+" - clientMSPID: "+clientMSPID))
+	return shim.Success([]byte(APIstub.GetTxID()))
 }
 
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
