@@ -122,12 +122,9 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 
 /**
 Vamos assumir a existência de apenas uma votação por canal, portanto dentro de uma chaincode, apenas um objeto de votação
-O objeto de votação pode ser editado contanto que não haja votos
+O objeto de votação pode ser editado contando que não haja votos ou candidatos
  */
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	//definir formato de entrada
-	//formatoData := "2006-01-02 15:04:05"
-
 	//validar parâmetros de entrada
 	if len(args) != 4 {
 		return shim.Error("Parâmetros esperados: inicio candidatura, termino candidatura, inicio votacao, termino votacao")
@@ -176,19 +173,6 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	if len(votacao.Votos) > 0 {
 		return shim.Error("Não é possível alterar a votacao, já existem votos computados")
 	}
-
-
-
-	//var votacao = Votacao{
-	//	ObjectType:         "votacao",
-	//	ID:                 "votacao",
-	//	InicioCandidatura:  inicioCandidatura.Format(formatoData),
-	//	TerminoCandidatura: terminoCandidatura.Format(formatoData),
-	//	InicioVotacao:      inicioVotacao.Format(formatoData),
-	//	TerminoVotacao:     terminoVotacao.Format(formatoData),
-	//	Candidatos:         nil,
-	//	Votos:              nil,
-	//}
 
 	votacao = Votacao{
 		ObjectType:         "votacao",
