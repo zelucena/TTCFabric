@@ -151,13 +151,12 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(erro4.Error())
 	}
 
-
 	if inicioCandidatura.Equal(terminoCandidatura) || inicioCandidatura.After(terminoCandidatura) {
-		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+		return shim.Error("O inicio das candidaturas deve ser uma data anterior ao termino das candidaturas")
 	}
 
 	if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
-		return shim.Error("O início das candidaturas deve ser uma data anterior ao término das candidaturas")
+		return shim.Error("O inicio das candidaturas deve ser uma data anterior ao termino das candidaturas")
 	}
 
 	var votacao, erroVotacao	= s.getVotacao(APIstub)
@@ -329,14 +328,13 @@ func (s *VotacaoContract) visualizarVotos(APIstub shim.ChaincodeStubInterface, a
 }
 
 func (s *VotacaoContract) divulgarResultados(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	formatoData := "2006-01-02 15:04:05"
 	var votacao, erro = s.getVotacao(APIstub)
 
 	if erro != nil {
 		return shim.Error(erro.Error())
 	}
 
-	var terminoVotacao, erroFormatoFim = time.Parse(formatoData, votacao.TerminoVotacao)
+	var terminoVotacao, erroFormatoFim = time.Parse(ISO_DATE, votacao.TerminoVotacao)
 
 	if erroFormatoFim != nil {
 		return shim.Error(erroFormatoFim.Error())
@@ -407,7 +405,6 @@ func (s *VotacaoContract) visualizarCandidatos(APIstub shim.ChaincodeStubInterfa
 }
 
 func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []string, clientHash string) peer.Response {
-	formatoData 	:= "2006-01-02 15:04:05"
 	dataAtual		:= time.Now()
 	candidatoID		:= args[0]
 
@@ -421,13 +418,13 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 		return shim.Error("Nao ha uma votacao em curso")
 	}
 
-	var inicioVotacao,  erroFormatoInicio = time.Parse(formatoData, votacao.InicioVotacao)
+	var inicioVotacao,  erroFormatoInicio = time.Parse(ISO_DATE, votacao.InicioVotacao)
 
 	if erroFormatoInicio != nil {
 		return shim.Error(erroFormatoInicio.Error())
 	}
 
-	var terminoVotacao, erroFormatoFim = time.Parse(formatoData, votacao.TerminoVotacao)
+	var terminoVotacao, erroFormatoFim = time.Parse(ISO_DATE, votacao.TerminoVotacao)
 
 	if erroFormatoFim != nil {
 		return shim.Error(erroFormatoFim.Error())
