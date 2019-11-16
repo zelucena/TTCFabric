@@ -4,8 +4,8 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"github.com/hyperledger/fabric/core/chaincode/lib/cid"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/core/chaincode/shim/ext/cid"
 	"github.com/hyperledger/fabric/protos/peer"
 	"sort"
 	"time"
@@ -78,7 +78,17 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 }
 
 func (s *VotacaoContract) getClientInfo(APIstub shim.ChaincodeStubInterface) peer.Response{
-	return shim.Success([]byte(APIstub.GetTxID()))
+	var certificado, erroCertificado = cid.GetX509Certificate(APIstub)
+	if erroCertificado != nil {
+		return shim.Error(erroCertificado.Error())
+	}
+
+	var certificadoBytes, erroJSON = json.Marshal(certificado)
+
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
+	return shim.Success(certificadoBytes)
 }
 
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
