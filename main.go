@@ -7,6 +7,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/chaincode/shim/ext/cid"
 	"github.com/hyperledger/fabric/protos/peer"
+	"regexp"
 	"sort"
 	"time"
 )
@@ -77,18 +78,30 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 	return votacao, nil
 }
 
+func (s *VotacaoContract) validarEmail(email string) bool{
+	Re := regexp.MustCompile(`^[a-z0-9._\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+	return Re.MatchString(email)
+}
+
 func (s *VotacaoContract) getClientInfo(APIstub shim.ChaincodeStubInterface) peer.Response{
-	var certificado, erroCertificado = cid.GetX509Certificate(APIstub)
-	if erroCertificado != nil {
-		return shim.Error(erroCertificado.Error())
+	//var certificado, erroCertificado = cid.GetX509Certificate(APIstub)
+	//if erroCertificado != nil {
+	//	return shim.Error(erroCertificado.Error())
+	//}
+	//
+	//var certificadoBytes, erroJSON = json.Marshal(certificado)
+	//
+	//if erroJSON != nil {
+	//	return shim.Error(erroJSON.Error())
+	//}
+	//return shim.Success(certificadoBytes)
+
+	var creator, erroCreator = APIstub.GetCreator()
+	if erroCreator != nil {
+		return shim.Error(erroCreator.Error())
 	}
 
-	var certificadoBytes, erroJSON = json.Marshal(certificado)
-
-	if erroJSON != nil {
-		return shim.Error(erroJSON.Error())
-	}
-	return shim.Success(certificadoBytes)
+	return shim.Success(creator)
 }
 
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
@@ -245,11 +258,26 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 		return shim.Error("O periodo de candidaturas ja terminou em " + dataAtual.Format(BR_DATE))
 	}
 
+	email := args[2]
+	if (len(email) > 254) {
+		return shim.Error("Email do candidato nao pode exceder 254 caracteres")
+	}
+
+	if (!s.validarEmail(email)) {
+		return shim.Error("Formato invalido de email")
+	}
+
+	nomeCandidato := args[1]
+
+	if (len(nomeCandidato) > 50) {
+		return shim.Error("Nome do candidato nao pode exceder 50 caracteres")
+	}
+
 	var candidato = Candidato{
 		ObjectType: "candidato",
 		ID:          args[0],
-		Nome:        args[1],
-		Email:       args[2],
+		Nome:        nomeCandidato,
+		Email:       email,
 		NumeroVotos: 0,
 	}
 
