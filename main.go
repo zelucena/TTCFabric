@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"sort"
 	"time"
+	"bytes"
 )
 
 const (
@@ -335,14 +336,15 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 		return shim.Error(erroGetHistory.Error())
 	}
 
+	var buffer bytes.Buffer
 	for historyIterator.HasNext() {
 		modificacao, erroHistory := historyIterator.Next()
 		if erroHistory != nil {
 			return shim.Error(erroHistory.Error())
 		}
-		fmt.Println("Modificacao: ", string(modificacao.Value))
+		buffer.WriteString(string(modificacao.Value))
 	}
-	return shim.Success(nil)
+	return shim.Success(buffer.Bytes())
 	//var votacaoAsBytes, erroJSON = json.Marshal(votacao)
 	//
 	//if erroJSON != nil {
