@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"sort"
 	"time"
-	"bytes"
 )
 
 const (
