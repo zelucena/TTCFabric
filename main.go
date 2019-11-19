@@ -393,13 +393,15 @@ func (s *VotacaoContract) divulgarResultados(APIstub shim.ChaincodeStubInterface
 		candidatos[voto.Candidato.ID].NumeroVotos++
 	}
 
-	var candidatosSlice []Candidato
+	//var candidatosSlice []Candidato
+	//
+	//for _, candidato := range candidatos {
+	//	candidatosSlice = append(candidatosSlice, *candidato)
+	//}
+	//sort.Sort(ByNumeroVotos(candidatosSlice))
+	//var votosAsBytes, erroJSON = json.Marshal(candidatosSlice)
 
-	for _, candidato := range candidatos {
-		candidatosSlice = append(candidatosSlice, *candidato)
-	}
-	sort.Sort(ByNumeroVotos(candidatosSlice))
-	var votosAsBytes, erroJSON = json.Marshal(candidatosSlice)
+	var votosAsBytes, erroJSON = json.Marshal(candidatos)
 
 	if erroJSON != nil {
 		return shim.Error(erroJSON.Error())
