@@ -336,21 +336,22 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 		return shim.Error(erroGetHistory.Error())
 	}
 
-	var buffer bytes.Buffer
+	var historico []string
+
 	for historyIterator.HasNext() {
 		modificacao, erroHistory := historyIterator.Next()
 		if erroHistory != nil {
 			return shim.Error(erroHistory.Error())
 		}
-		buffer.WriteString(string(modificacao.Value))
+		historico = append(historico, string(modificacao.Value))
 	}
-	return shim.Success(buffer.Bytes())
-	//var votacaoAsBytes, erroJSON = json.Marshal(votacao)
-	//
-	//if erroJSON != nil {
-	//	return shim.Error(erroJSON.Error())
-	//}
-	//return shim.Success(votacaoAsBytes)
+
+	var historicoAsBytes, erroJSON = json.Marshal(historico)
+
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
+	return shim.Success(historicoAsBytes)
 }
 
 func (s *VotacaoContract) visualizarVotos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
