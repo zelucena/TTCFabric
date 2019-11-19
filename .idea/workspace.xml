@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bf0e6bf0-7db5-4760-b898-fabaf877cba4" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -40,9 +41,6 @@
     <option name="urls">
       <list>
         <option value="file://$PROJECT_DIR$/../../.go" />
-        <option value="file://$PROJECT_DIR$/../.." />
-        <option value="file://$PROJECT_DIR$/../../.go/src/github.com/hyperledger" />
-        <option value="file://$PROJECT_DIR$/../../.go/src" />
       </list>
     </option>
   </component>
@@ -66,7 +64,7 @@
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/.." />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="com.goide.configuration.GoLibrariesConfigurableProvider" />
+    <property name="settings.editor.selected.configurable" value="com.goide.configuration.GoProjectSettingsConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -143,7 +141,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="Compilacao" />
   </component>
   <component name="VgoProject">
-    <integration-enabled>true</integration-enabled>
     <proxy>direct</proxy>
   </component>
 </project>

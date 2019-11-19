@@ -332,12 +332,12 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 	historyIterator, erroGetHistory := APIstub.GetHistoryForKey("votacao")
 
 	if erroGetHistory != nil {
-		return shim.Error(erroGetHistory)
+		return shim.Error(erroGetHistory.Error())
 	}
 
 	for historyIterator.HasNext() {
 		modificacao, erroHistory := historyIterator.Next()
-		if err != nil {
+		if erroHistory != nil {
 			return shim.Error(erroHistory.Error())
 		}
 		fmt.Println("Modificacao: ", string(modificacao.Value))
