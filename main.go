@@ -8,7 +8,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim/ext/cid"
 	"github.com/hyperledger/fabric/protos/peer"
 	"regexp"
-	// _ "sort"
+	"sort"
 	"time"
 )
 
@@ -309,7 +309,6 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 }
 
 func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	formatoData := "2006-01-02 15:04:05"
 	var votacao, erro = s.getVotacao(APIstub)
 	if erro != nil {
 		return shim.Error(erro.Error())
@@ -319,7 +318,7 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 		return shim.Error("Nao ha uma votacao em curso")
 	}
 
-	var terminoVotacao, erroFormatoFim = time.Parse(formatoData, votacao.TerminoVotacao)
+	var terminoVotacao, erroFormatoFim = time.Parse(ISO_DATE, votacao.TerminoVotacao)
 
 	if erroFormatoFim != nil {
 		return shim.Error(erroFormatoFim.Error())
@@ -330,23 +329,36 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 		//return shim.Error("O periodo de votacao encerra em "+dataAtual.Format(BR_DATE))
 	}
 
-	var votacaoAsBytes, erroJSON = json.Marshal(votacao)
+	historyIterator, erroGetHistory := APIstub.GetHistoryForKey("votacao")
 
-	if erroJSON != nil {
-		return shim.Error(erroJSON.Error())
+	if erroGetHistory != nil {
+		return shim.Error(erroGetHistory)
 	}
-	return shim.Success(votacaoAsBytes)
+
+	for historyIterator.HasNext() {
+		modificacao, erroHistory := historyIterator.Next()
+		if err != nil {
+			return shim.Error(erroHistory.Error())
+		}
+		fmt.Println("Modificacao: ", string(modificacao.Value))
+	}
+	return shim.Success(nil)
+	//var votacaoAsBytes, erroJSON = json.Marshal(votacao)
+	//
+	//if erroJSON != nil {
+	//	return shim.Error(erroJSON.Error())
+	//}
+	//return shim.Success(votacaoAsBytes)
 }
 
 func (s *VotacaoContract) visualizarVotos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	formatoData := "2006-01-02 15:04:05"
 	var votacao, erro = s.getVotacao(APIstub)
 
 	if erro != nil {
 		return shim.Error(erro.Error())
 	}
 
-	var terminoVotacao, erroFormatoFim = time.Parse(formatoData, votacao.TerminoVotacao)
+	var terminoVotacao, erroFormatoFim = time.Parse(ISO_DATE, votacao.TerminoVotacao)
 
 	if erroFormatoFim != nil {
 		return shim.Error(erroFormatoFim.Error())
@@ -380,7 +392,7 @@ func (s *VotacaoContract) divulgarResultados(APIstub shim.ChaincodeStubInterface
 
 	var dataAtual = time.Now()
 	if terminoVotacao.After(dataAtual) {
-		return shim.Error("O periodo de votacao ainda nao encerrou")
+		return shim.Error("O periodo de votacao se encerra em " + terminoVotacao.Format(BR_DATE))
 	}
 
 	//garantir que os votos estão zerados
@@ -398,15 +410,13 @@ func (s *VotacaoContract) divulgarResultados(APIstub shim.ChaincodeStubInterface
 		candidatos[voto.Candidato.ID] = candidato
 	}
 
-	//var candidatosSlice []Candidato
-	//
-	//for _, candidato := range candidatos {
-	//	candidatosSlice = append(candidatosSlice, *candidato)
-	//}
-	//sort.Sort(ByNumeroVotos(candidatosSlice))
-	//var votosAsBytes, erroJSON = json.Marshal(candidatosSlice)
+	var candidatosSlice []Candidato
 
-	var votosAsBytes, erroJSON = json.Marshal(votacao.Candidatos)
+	for _, candidato := range candidatos {
+		candidatosSlice = append(candidatosSlice, candidato)
+	}
+	sort.Sort(ByNumeroVotos(candidatosSlice))
+	var votosAsBytes, erroJSON = json.Marshal(candidatosSlice)
 
 	if erroJSON != nil {
 		return shim.Error(erroJSON.Error())
