@@ -8,7 +8,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim/ext/cid"
 	"github.com/hyperledger/fabric/protos/peer"
 	"regexp"
-	_ "sort"
+	// _ "sort"
 	"time"
 )
 
