@@ -383,14 +383,19 @@ func (s *VotacaoContract) divulgarResultados(APIstub shim.ChaincodeStubInterface
 		return shim.Error("O periodo de votacao ainda nao encerrou")
 	}
 
-	candidatos := make(map[string]*Candidato)
-	for id, candidato := range votacao.Candidatos {
-		candidatos[id] = &candidato
-		candidatos[id].NumeroVotos = 0
+	//garantir que os votos estão zerados
+	var candidatos = votacao.Candidatos
+	for id, candidato := range candidatos {
+		temp := candidato
+		temp.NumeroVotos = 0
+		candidatos[id] = temp
 	}
 
+	//contar votos
 	for _, voto := range votacao.Votos {
-		candidatos[voto.Candidato.ID].NumeroVotos++
+		candidato := candidatos[voto.Candidato.ID]
+		candidato.NumeroVotos++
+		candidatos[voto.Candidato.ID] = candidato
 	}
 
 	//var candidatosSlice []Candidato
@@ -401,7 +406,7 @@ func (s *VotacaoContract) divulgarResultados(APIstub shim.ChaincodeStubInterface
 	//sort.Sort(ByNumeroVotos(candidatosSlice))
 	//var votosAsBytes, erroJSON = json.Marshal(candidatosSlice)
 
-	var votosAsBytes, erroJSON = json.Marshal(candidatos)
+	var votosAsBytes, erroJSON = json.Marshal(votacao.Candidatos)
 
 	if erroJSON != nil {
 		return shim.Error(erroJSON.Error())
