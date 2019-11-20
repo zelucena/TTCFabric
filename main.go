@@ -122,15 +122,13 @@ func (s *VotacaoContract) getClientInfo(APIstub shim.ChaincodeStubInterface) pee
 	if erroCertificado != nil {
 		return shim.Error(erroCertificado.Error())
 	}
+	
+	var certificadoBytes, erroJSON = json.Marshal(certificado)
 
-	return shim.Success([]byte(certificado.Issuer.CommonName))
-	//
-	//var certificadoBytes, erroJSON = json.Marshal(certificado)
-	//
-	//if erroJSON != nil {
-	//	return shim.Error(erroJSON.Error())
-	//}
-	//return shim.Success(certificadoBytes)
+	if erroJSON != nil {
+		return shim.Error(erroJSON.Error())
+	}
+	return shim.Success(certificadoBytes)
 
 	//var creator, erroCreator = APIstub.GetCreator()
 	//if erroCreator != nil {
