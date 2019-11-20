@@ -78,9 +78,43 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 	return votacao, nil
 }
 
-func (s *VotacaoContract) validarEmail(email string) bool{
-	Re := regexp.MustCompile(`^[a-z0-9._\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-	return Re.MatchString(email)
+func (s *VotacaoContract) validarEmail(email string) (bool, error){
+	Re, erroCompile := regexp.Compile(`^[a-z0-9._\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+
+	if erroCompile != nil {
+		return false, erroCompile
+	}
+	return Re.MatchString(email), nil
+}
+
+func (s *VotacaoContract) isAdmin(APIstub shim.ChaincodeStubInterface) (bool, error){
+	var certificado, erroCertificado = cid.GetX509Certificate(APIstub)
+	if erroCertificado != nil {
+		return false, erroCertificado
+	}
+
+	Re, erroCompile := regexp.Compile(`^Admin@[a-z]+.[a-z]+$`)
+
+	if erroCompile != nil {
+		return false, erroCompile
+	}
+
+	return Re.MatchString(certificado.Issuer.CommonName), nil
+}
+
+func (s *VotacaoContract) isUser(APIstub shim.ChaincodeStubInterface) (bool, error){
+	var certificado, erroCertificado = cid.GetX509Certificate(APIstub)
+	if erroCertificado != nil {
+		return false, erroCertificado
+	}
+
+	Re, erroCompile := regexp.Compile(`^User[0-9]+@[a-z]+.[a-z]+$`)
+
+	if erroCompile != nil {
+		return false, erroCompile
+	}
+
+	return Re.MatchString(certificado.Issuer.CommonName), nil
 }
 
 func (s *VotacaoContract) getClientInfo(APIstub shim.ChaincodeStubInterface) peer.Response{
@@ -120,19 +154,40 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 	}
 
 	clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
+	isUser, erroUser := s.isUser(APIstub)
+
+	if erroUser != nil {
+		return shim.Error(erroUser.Error())
+	}
+	isAdmin, erroAdmin := s.isAdmin(APIstub)
+	if erroAdmin != nil {
+		return shim.Error(erroAdmin.Error())
+	}
 
 	// invoca a função apropriada
 	if function == "cadastrarVotacao" {
+		if !isAdmin {
+			return shim.Error("Funcao exclusiva para o administrador")
+		}
 		return s.cadastrarVotacao(APIstub, args)
 	} else if function == "visualizarVotacao" {
 		return s.visualizarVotacao(APIstub, args)
 	} else if function == "cadastrarCandidato" {
+		if !isAdmin {
+			return shim.Error("Funcao exclusiva para o administrador")
+		}
 		return s.cadastrarCandidato(APIstub, args)
 	} else if function == "visualizarCandidatos" {
 		return s.visualizarCandidatos(APIstub, args)
 	} else if function == "votar" {
+		if !isUser {
+			return shim.Error("Funcao exclusiva para usuarios")
+		}
 		return s.votar(APIstub, args, clientHash)
 	} else if function == "visualizarVoto" {
+		if !isUser {
+			return shim.Error("Funcao exclusiva para usuarios")
+		}
 		return s.visualizarVoto(APIstub, args, clientHash)
 	} else if function == "divulgarResultados" {
 		return s.divulgarResultados(APIstub, args)
@@ -263,7 +318,11 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 		return shim.Error("Email do candidato nao pode exceder 254 caracteres")
 	}
 
-	if (!s.validarEmail(email)) {
+	validacaoEmail, erroValidacaoEmail := s.validarEmail(email)
+	if erroValidacaoEmail != nil {
+		return shim.Error(erroValidacaoEmail.Error())
+	}
+	if !validacaoEmail {
 		return shim.Error("Formato invalido de email")
 	}
 
