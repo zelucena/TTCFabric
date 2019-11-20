@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+//formatos de data
 const (
 	ISO_DATE = "2006-01-02 15:04:05"
 	BR_DATE  = "02/01/2006 15:04:05"
@@ -51,6 +52,7 @@ type Voto struct {
 //Classe da chaincode
 type VotacaoContract struct { }
 
+//metodo para ordenação dos candidatos vencedores
 // ByNumeroVotos implementa sort.Interface baseado no campo Candidato.Votos
 type ByNumeroVotos []Candidato
 func (a ByNumeroVotos) Len() int           { return len(a) }
@@ -61,6 +63,7 @@ func (s *VotacaoContract) Init(APIstub shim.ChaincodeStubInterface) peer.Respons
 	return shim.Success(nil)
 }
 
+//retorna o estado atual da votacao
 func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votacao, error) {
 	var votacao = Votacao{}
 	var state, GetStateError = APIstub.GetState("votacao")
@@ -78,6 +81,7 @@ func (s *VotacaoContract) getVotacao(APIstub shim.ChaincodeStubInterface) (Votac
 	return votacao, nil
 }
 
+//funcao local para validacao de formato de emails, conforme necessidade de validar parametros de entrada
 func (s *VotacaoContract) validarEmail(email string) (bool, error){
 	Re, erroCompile := regexp.Compile(`^[a-z0-9._\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
 
@@ -87,6 +91,7 @@ func (s *VotacaoContract) validarEmail(email string) (bool, error){
 	return Re.MatchString(email), nil
 }
 
+//afere atraves do certificado se o client e do tipo Admin@org.suffix
 func (s *VotacaoContract) isAdmin(APIstub shim.ChaincodeStubInterface) (bool, error){
 	var certificado, erroCertificado = cid.GetX509Certificate(APIstub)
 	if erroCertificado != nil {
@@ -102,6 +107,7 @@ func (s *VotacaoContract) isAdmin(APIstub shim.ChaincodeStubInterface) (bool, er
 	return Re.MatchString(certificado.Subject.CommonName), nil
 }
 
+//afere atraves do certificado se o client e do tipo User{n}@org.suffix
 func (s *VotacaoContract) isUser(APIstub shim.ChaincodeStubInterface) (bool, error){
 	var certificado, erroCertificado = cid.GetX509Certificate(APIstub)
 	if erroCertificado != nil {
@@ -117,48 +123,39 @@ func (s *VotacaoContract) isUser(APIstub shim.ChaincodeStubInterface) (bool, err
 	return Re.MatchString(certificado.Subject.CommonName), nil
 }
 
-func (s *VotacaoContract) getClientInfo(APIstub shim.ChaincodeStubInterface) peer.Response{
-	var certificado, erroCertificado = cid.GetX509Certificate(APIstub)
-	if erroCertificado != nil {
-		return shim.Error(erroCertificado.Error())
-	}
-
-	var certificadoBytes, erroJSON = json.Marshal(certificado)
-
-	if erroJSON != nil {
-		return shim.Error(erroJSON.Error())
-	}
-	return shim.Success(certificadoBytes)
-
-	//var creator, erroCreator = APIstub.GetCreator()
-	//if erroCreator != nil {
-	//	return shim.Error(erroCreator.Error())
-	//}
-	//
-	//return shim.Success(creator)
-}
-
-func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
-	// Extrair função e parâmetros chamados
-	function, args := APIstub.GetFunctionAndParameters()
-
+//gera um ID unico para o usuario
+func (s *VotacaoContract) getClientHash(APIstub shim.ChaincodeStubInterface) (string, error) {
 	clientID, erroID := cid.GetID(APIstub)
 	clientMSPID, erroMSPID := cid.GetMSPID(APIstub)
 
 	if erroID != nil {
-		return shim.Error(erroID.Error())
+		return "", erroID
 	}
 
 	if erroMSPID != nil {
-		return shim.Error(erroMSPID.Error())
+		return "", erroMSPID
 	}
 
-	clientHash	:= fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID)))
-	isUser, erroUser := s.isUser(APIstub)
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(clientMSPID + clientID))), nil
+}
 
+//Recebe o nome da funcao e os parametros de entrada
+//trata atributos do client
+//chama a funcao desejada, validando permissoes
+func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
+	// Extrair função e parâmetros chamados
+	function, args := APIstub.GetFunctionAndParameters()
+
+	clientHash, erroHash := s.getClientHash(APIstub)
+	if erroHash != nil {
+		return shim.Error(erroHash.Error())
+	}
+
+	isUser, erroUser := s.isUser(APIstub)
 	if erroUser != nil {
 		return shim.Error(erroUser.Error())
 	}
+
 	isAdmin, erroAdmin := s.isAdmin(APIstub)
 	if erroAdmin != nil {
 		return shim.Error(erroAdmin.Error())
@@ -191,16 +188,15 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return s.visualizarVoto(APIstub, args, clientHash)
 	} else if function == "divulgarResultados" {
 		return s.divulgarResultados(APIstub, args)
-	} else if function == "getClientInfo" {
-		return s.getClientInfo(APIstub)
 	}
 
 	return shim.Error("Funcao indisponivel.")
 }
 
 /**
-Vamos assumir a existência de apenas uma votação por canal, portanto dentro de uma chaincode, apenas um objeto de votação
+assumindo a existência de apenas uma votação por canal, portanto dentro de uma chaincode, apenas um objeto de votação
 O objeto de votação pode ser editado contando que não haja votos ou candidatos
+Nao permite colisao entre periodo de cadastro de candidatos e votacao
  */
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	//validar parâmetros de entrada
@@ -235,6 +231,10 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 
 	if inicioVotacao.Equal(terminoVotacao) || inicioVotacao.After(terminoVotacao) {
 		return shim.Error("O inicio das candidaturas deve ser uma data anterior ao termino das candidaturas")
+	}
+
+	if terminoCandidatura.Equal(inicioVotacao) || terminoCandidatura.After(inicioVotacao) {
+		return shim.Error("As candidaturas devem encerrar antes do inicio da votacao")
 	}
 
 	var votacao, erroVotacao	= s.getVotacao(APIstub)
@@ -277,6 +277,8 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
+//cadastra candidato com nome e email, validando limite de 50 caracteres para nome (arbitrario) e 254 para email (RFC 3696)
+//disponivel no periodo valido de cadastro de candidatos
 func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var dataAtual = time.Now()
 	if len(args) != 3 {
@@ -367,6 +369,7 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 	return shim.Success(nil)
 }
 
+// audita todas as modificacoes na votacao, expondo todas as informacoes publicamente. Disponivel apos o termino da votacao
 func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var votacao, erro = s.getVotacao(APIstub)
 	if erro != nil {
@@ -385,7 +388,7 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 
 	var dataAtual = time.Now()
 	if terminoVotacao.After(dataAtual) {
-		//return shim.Error("O periodo de votacao encerra em "+dataAtual.Format(BR_DATE))
+		return shim.Error("O periodo de votacao encerra em "+dataAtual.Format(BR_DATE))
 	}
 
 	historyIterator, erroGetHistory := APIstub.GetHistoryForKey("votacao")
@@ -412,6 +415,7 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 	return shim.Success(historicoAsBytes)
 }
 
+//retorna apenas a lista de votos. Disponivel apos a votacao ter encerrado
 func (s *VotacaoContract) visualizarVotos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var votacao, erro = s.getVotacao(APIstub)
 
@@ -427,7 +431,7 @@ func (s *VotacaoContract) visualizarVotos(APIstub shim.ChaincodeStubInterface, a
 
 	var dataAtual = time.Now()
 	if terminoVotacao.After(dataAtual) {
-		return shim.Error("O período de votação ainda nao encerrou")
+		return shim.Error("O periodo de votacao se encerra em " + terminoVotacao.Format(BR_DATE))
 	}
 
 	var votosAsBytes, erroJSON = json.Marshal(votacao.Votos)
@@ -438,6 +442,7 @@ func (s *VotacaoContract) visualizarVotos(APIstub shim.ChaincodeStubInterface, a
 	return shim.Success(votosAsBytes)
 }
 
+//realiza a contagem de votos na rede apos o periodo de encerramento
 func (s *VotacaoContract) divulgarResultados(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var votacao, erro = s.getVotacao(APIstub)
 
@@ -485,6 +490,7 @@ func (s *VotacaoContract) divulgarResultados(APIstub shim.ChaincodeStubInterface
 	return shim.Success(votosAsBytes)
 }
 
+//visualiza o proprio voto, independente do termino da votacao
 func (s *VotacaoContract) visualizarVoto(APIstub shim.ChaincodeStubInterface, args []string, clientHash string) peer.Response {
 	var votacao, erro = s.getVotacao(APIstub)
 
@@ -505,6 +511,7 @@ func (s *VotacaoContract) visualizarVoto(APIstub shim.ChaincodeStubInterface, ar
 	return shim.Success(votoAsBytes)
 }
 
+//visualiza todos os candidatos cadastrados
 func (s *VotacaoContract) visualizarCandidatos(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var votacao, erro = s.getVotacao(APIstub)
 
@@ -520,6 +527,7 @@ func (s *VotacaoContract) visualizarCandidatos(APIstub shim.ChaincodeStubInterfa
 	return shim.Success(candidatosAsBytes)
 }
 
+//realiza um voto unico dentro de um periodo valido de votacoes. Informar ID do candidato
 func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []string, clientHash string) peer.Response {
 	dataAtual		:= time.Now()
 	candidatoID		:= args[0]
