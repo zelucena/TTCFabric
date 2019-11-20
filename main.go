@@ -99,7 +99,7 @@ func (s *VotacaoContract) isAdmin(APIstub shim.ChaincodeStubInterface) (bool, er
 		return false, erroCompile
 	}
 
-	return Re.MatchString(certificado.Issuer.CommonName), nil
+	return Re.MatchString(certificado.Subject.CommonName), nil
 }
 
 func (s *VotacaoContract) isUser(APIstub shim.ChaincodeStubInterface) (bool, error){
@@ -114,7 +114,7 @@ func (s *VotacaoContract) isUser(APIstub shim.ChaincodeStubInterface) (bool, err
 		return false, erroCompile
 	}
 
-	return Re.MatchString(certificado.Issuer.CommonName), nil
+	return Re.MatchString(certificado.Subject.CommonName), nil
 }
 
 func (s *VotacaoContract) getClientInfo(APIstub shim.ChaincodeStubInterface) peer.Response{
@@ -122,7 +122,7 @@ func (s *VotacaoContract) getClientInfo(APIstub shim.ChaincodeStubInterface) pee
 	if erroCertificado != nil {
 		return shim.Error(erroCertificado.Error())
 	}
-	
+
 	var certificadoBytes, erroJSON = json.Marshal(certificado)
 
 	if erroJSON != nil {
