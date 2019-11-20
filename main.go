@@ -118,10 +118,12 @@ func (s *VotacaoContract) isUser(APIstub shim.ChaincodeStubInterface) (bool, err
 }
 
 func (s *VotacaoContract) getClientInfo(APIstub shim.ChaincodeStubInterface) peer.Response{
-	//var certificado, erroCertificado = cid.GetX509Certificate(APIstub)
-	//if erroCertificado != nil {
-	//	return shim.Error(erroCertificado.Error())
-	//}
+	var certificado, erroCertificado = cid.GetX509Certificate(APIstub)
+	if erroCertificado != nil {
+		return shim.Error(erroCertificado.Error())
+	}
+
+	return shim.Success([]byte(certificado.Issuer.CommonName))
 	//
 	//var certificadoBytes, erroJSON = json.Marshal(certificado)
 	//
@@ -130,12 +132,12 @@ func (s *VotacaoContract) getClientInfo(APIstub shim.ChaincodeStubInterface) pee
 	//}
 	//return shim.Success(certificadoBytes)
 
-	var creator, erroCreator = APIstub.GetCreator()
-	if erroCreator != nil {
-		return shim.Error(erroCreator.Error())
-	}
-
-	return shim.Success(creator)
+	//var creator, erroCreator = APIstub.GetCreator()
+	//if erroCreator != nil {
+	//	return shim.Error(erroCreator.Error())
+	//}
+	//
+	//return shim.Success(creator)
 }
 
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
