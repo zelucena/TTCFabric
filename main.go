@@ -52,7 +52,7 @@ type Voto struct {
 //Classe da chaincode
 type VotacaoContract struct { }
 
-//metodo para ordenação dos candidatos vencedores
+//metodo para ordenaçao dos candidatos vencedores
 // ByNumeroVotos implementa sort.Interface baseado no campo Candidato.Votos
 type ByNumeroVotos []Candidato
 func (a ByNumeroVotos) Len() int           { return len(a) }
@@ -143,7 +143,7 @@ func (s *VotacaoContract) getClientHash(APIstub shim.ChaincodeStubInterface) (st
 //trata atributos do client
 //chama a funcao desejada, validando permissoes
 func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
-	// Extrair função e parâmetros chamados
+	// Extrair funçao e parâmetros chamados
 	function, args := APIstub.GetFunctionAndParameters()
 
 	clientHash, erroHash := s.getClientHash(APIstub)
@@ -161,7 +161,7 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 		return shim.Error(erroAdmin.Error())
 	}
 
-	// invoca a função apropriada
+	// invoca a funçao apropriada
 	if function == "cadastrarVotacao" {
 		if !isAdmin {
 			return shim.Error("Funcao exclusiva para o administrador")
@@ -194,8 +194,8 @@ func (s *VotacaoContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respo
 }
 
 /**
-assumindo a existência de apenas uma votação por canal, portanto dentro de uma chaincode, apenas um objeto de votação
-O objeto de votação pode ser editado contando que não haja votos ou candidatos
+assumindo a existência de apenas uma votaçao por canal, portanto dentro de uma chaincode, apenas um objeto de votaçao
+O objeto de votaçao pode ser editado contando que nao haja votos ou candidatos
 Nao permite colisao entre periodo de cadastro de candidatos e votacao
  */
 func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
@@ -244,11 +244,11 @@ func (s *VotacaoContract) cadastrarVotacao(APIstub shim.ChaincodeStubInterface, 
 	}
 
 	if len(votacao.Candidatos) > 0 {
-		return shim.Error("Não e possível alterar a votação, ja existem candidatos computados")
+		return shim.Error("Nao e possivel alterar a votaçao, ja existem candidatos computados")
 	}
 
 	if len(votacao.Votos) > 0 {
-		return shim.Error("Não é possível alterar a votacao, já existem votos computados")
+		return shim.Error("Nao e possivel alterar a votacao, ja existem votos computados")
 	}
 
 	votacao = Votacao{
@@ -461,7 +461,7 @@ func (s *VotacaoContract) divulgarResultados(APIstub shim.ChaincodeStubInterface
 		return shim.Error("O periodo de votacao se encerra em " + terminoVotacao.Format(BR_DATE))
 	}
 
-	//garantir que os votos estão zerados
+	//garantir que os votos estao zerados
 	var candidatos = votacao.Candidatos
 	for id, candidato := range candidatos {
 		temp := candidato
@@ -568,7 +568,7 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 
 	var voto = Voto{}
 	if votacao.Votos[clientHash] != voto {
-		return shim.Error("Não é permitido votar duas vezes")
+		return shim.Error("Nao e permitido votar duas vezes")
 	}
 
 	var candidatoBranco = Candidato{}
