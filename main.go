@@ -308,11 +308,11 @@ func (s *VotacaoContract) cadastrarCandidato(APIstub shim.ChaincodeStubInterface
 	}
 
 	if inicioCandidatura.After(dataAtual) {
-		return shim.Error("O periodo de candidaturas ira comecar em " + dataAtual.Format(BR_DATE))
+		return shim.Error("O periodo de candidaturas ira comecar em " + inicioCandidatura.Format(BR_DATE))
 	}
 
 	if terminoCandidatura.Before(dataAtual) {
-		return shim.Error("O periodo de candidaturas ja terminou em " + dataAtual.Format(BR_DATE))
+		return shim.Error("O periodo de candidaturas ja terminou em " + terminoCandidatura.Format(BR_DATE))
 	}
 
 	email := args[2]
@@ -388,7 +388,7 @@ func (s *VotacaoContract) visualizarVotacao(APIstub shim.ChaincodeStubInterface,
 
 	var dataAtual = time.Now()
 	if terminoVotacao.After(dataAtual) {
-		return shim.Error("O periodo de votacao encerra em "+dataAtual.Format(BR_DATE))
+		return shim.Error("O periodo de votacao encerra em "+terminoVotacao.Format(BR_DATE))
 	}
 
 	historyIterator, erroGetHistory := APIstub.GetHistoryForKey("votacao")
