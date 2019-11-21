@@ -555,11 +555,11 @@ func (s *VotacaoContract) votar(APIstub shim.ChaincodeStubInterface, args []stri
 	}
 
 	if inicioVotacao.After(dataAtual) {
-		return shim.Error("O periodo de candidaturas comeca em "+inicioVotacao.Format(BR_DATE))
+		return shim.Error("O periodo de votacao comeca em "+inicioVotacao.Format(BR_DATE))
 	}
 
 	if terminoVotacao.Before(dataAtual) {
-		return shim.Error("O periodo de candidaturas encerrou em "+terminoVotacao.Format(BR_DATE))
+		return shim.Error("O periodo de votacao encerrou em "+terminoVotacao.Format(BR_DATE))
 	}
 
 	if len(args) != 1 {
